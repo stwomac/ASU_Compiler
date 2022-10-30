@@ -1,6 +1,5 @@
-/*
 
-note token is a private error
+//note token is a private error
 
 string nextToken() //returns the next token or end of file marker
 {
@@ -59,4 +58,3 @@ char nextChar() //returns the next character or end of file marker
     return ch;
 }
 
-*/
