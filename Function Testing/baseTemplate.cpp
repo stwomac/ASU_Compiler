@@ -1,11 +1,15 @@
 #include <stage0.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <map>
 
 using namespace std;
 
 
 Compiler::Compiler(char **argv) // constructor
 {
-    
+    cout<< "what" << endl;
 }
 
 Compiler::~Compiler()           // destructor
@@ -115,23 +119,23 @@ string Compiler::whichValue(string name) // tells which value a name has
     return "";
 }
 
-void Compiler::code(string op, string operand1 = "", string operand2 = "")
+void Compiler::code(string op, string operand1 , string operand2 )
 {
     
 }
 
 // Emit Functions
-void Compiler::emit(string label = "", string instruction = "", string operands = "", string comment = "")
+void Compiler::emit(string label , string instruction , string operands , string comment )
 {
     
 }
 
-void Compiler::emitPrologue(string progName, string = "")
+void Compiler::emitPrologue(string progName, string s)
 {
     
 }
 
-void Compiler::emitEpilogue(string = "", string = "")
+void Compiler::emitEpilogue(string a, string b)
 {
     
 }
