@@ -1,0 +1,10 @@
+{
+  "version": "0.2.1",
+  "tasks": [
+    {
+      "taskLabel": "task-testing",
+      "appliesTo": "Function Testing/testing.cpp",
+      "type": "launch"
+    }
+  ]
+}
