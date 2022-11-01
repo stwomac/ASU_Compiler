@@ -270,7 +270,29 @@ string Compiler::nextToken() // returns the next token or END_OF_FILE marker
 // Other routines
 string Compiler::genInternalName(storeTypes stype) const
 {
-    return "";
+    static int intCount = 0;
+    
+    static int boolCount = 0;
+    
+    string ret;
+    
+    if(stype == INTEGER)
+    {
+        
+        ret = "I" + to_string(intCount);
+        intCount++;
+    }
+    else if( stype == BOOLEAN )
+    {
+        ret = "I" + to_string(boolCount);
+        boolCount++;
+    }
+    else
+    {
+        processError("genInternalName recieved a non legal stype");
+    }
+    
+    return ret;
 }
 void Compiler::processError(string err)
 {
