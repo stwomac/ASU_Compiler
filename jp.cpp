@@ -255,18 +255,18 @@ void Compiler::insert(string externalName, storeTypes inType, modes inMode, stri
    }
 }
 
-storeTypes Compiler::whichType(string name) // tells which data type a name has
+storeTypes Compiler::whichType(string name) // tells which data type a name has			look up what "data type" actually is 		WIP
 {
-   if (name is a literal)
-      if (name is a boolean literal)
+   if (isLiteral(name))
+      if (isBoolean(name))
          data type = BOOLEAN
       else
          data type = INTEGER
    else //name is an identifier and hopefully a constant
-      if (symbolTable[name] is defined)
+      if (symbolTable.find(name) != symbolTable.end())
          data type = type of symbolTable[name]
       else
-         processError(reference to undefined constant)
+         processError("reference to undefined constant")
    return data type
 }
 string Compiler::whichValue(string name) // tells which value a name has
