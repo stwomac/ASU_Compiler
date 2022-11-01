@@ -30,19 +30,21 @@ void Compiler::createListingHeader()
 
 void Compiler::parser()
 {
-   int i = 10;
+   int i = 5;
    
-   string s = "";
+   string s[6] = {"aab", "1aaab1234", " b", "aa__b", "a_b", "as_1"};
    
-   while (i > 0)
+   while (i >= 0)
    {
-      i--;
       
-     cout << "eh" << " ";
-	  if(i > 5)
-      cout <<endl << genInternalName(INTEGER) << endl;
+      
+     
+	  if(isNonKeyId(s[i]))
+     {cout <<endl << s[i] << " true" << endl;}
      else
-      cout <<endl << genInternalName(BOOLEAN) << endl;
+     {cout <<endl << s[i] << " false" << endl;}
+   
+      i--;
    }
 }
 
@@ -89,7 +91,27 @@ void Compiler::varStmts()       // stage 0, production 7
 
 string Compiler::ids()          // stage 0, production 8
 {
-    return "";
+    string temp, tempString;
+    
+    if(!isNonKeyId(token))
+    {
+       processError("non-keyword identifier expected");
+    }
+    
+    tempString = token;
+    temp = token;
+    
+    if( nextToken() == ",")
+    {
+       if(!isNonKeyId(nextToken()))
+       {
+          processError("non-keyword identifier expected");
+       }
+       
+       tempString = temp + "," + ids();
+    }
+    
+    return tempString;
 }
 
 // Helper functions for the Pascallite lexicon
@@ -98,6 +120,7 @@ bool Compiler::isKeyword(string s) const  // determines if s is a keyword
     return true;
 }
 
+/*DONE AND TESTED*/
 bool Compiler::isSpecialSymbol(char c) const // determines if c is a special symbol
 {
     if( c == '=' ||
@@ -112,8 +135,25 @@ bool Compiler::isSpecialSymbol(char c) const // determines if c is a special sym
     return false;
 }
 
+/*DONE AND TESTED*/
 bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id
 {
+   
+	if(!islower(s[0]) ){
+		return false;
+	}
+   else if(!islower(s[s.length() - 1]) && !isdigit(s[s.length() - 1]))
+   {
+      return false;
+   }
+   
+	for(uint i = 1; i < s.length() - 2; i++){
+		if (s[i] == '_'){
+			if(s[i+1] == '_'){
+				return false;
+			}
+		}
+	}
     return true;
 }
 
@@ -173,7 +213,7 @@ void Compiler::emitStorage()
     
 }
 
-
+/*DONE AND TESTED*/
 // Lexical routines
 char Compiler::nextChar() // returns the next character or END_OF_FILE marker
 {
@@ -200,6 +240,7 @@ char Compiler::nextChar() // returns the next character or END_OF_FILE marker
     return ch;
 }
 
+/*DONE AND TESTED*/
 string Compiler::nextToken() // returns the next token or END_OF_FILE marker
 {
     token = "";
@@ -272,6 +313,7 @@ string Compiler::nextToken() // returns the next token or END_OF_FILE marker
     return token;
 }
 
+/*DONE AND TESTED*/
 // Other routines
 string Compiler::genInternalName(storeTypes stype) const
 {
@@ -298,7 +340,7 @@ string Compiler::genInternalName(storeTypes stype) const
 }
 void Compiler::processError(string err)
 {
-    //Error: Line 7: ":" expected
-   //listingFile << "Error: Line " << lineNo << ": " << err << "/n";
-  // exit(EXIT_FAILURE);
+    Error: Line 7: ":" expected
+    listingFile << "Error: Line " << lineNo << ": " << err << "/n";
+    exit(EXIT_FAILURE);
 }
