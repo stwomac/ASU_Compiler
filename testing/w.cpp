@@ -30,14 +30,19 @@ void Compiler::createListingHeader()
 
 void Compiler::parser()
 {
-   nextChar();
+   int i = 10;
    
-   while (ch != END_OF_FILE)
+   string s = "";
+   
+   while (i > 0)
    {
-      nextToken();
-      string s = token;
-   
-      cout <<endl << s << endl;
+      i--;
+      
+     cout << "eh" << " ";
+	  if(i > 5)
+      cout <<endl << genInternalName(INTEGER) << endl;
+     else
+      cout <<endl << genInternalName(BOOLEAN) << endl;
    }
 }
 
@@ -284,17 +289,16 @@ string Compiler::genInternalName(storeTypes stype) const
     }
     else if( stype == BOOLEAN )
     {
-        ret = "I" + to_string(boolCount);
+        ret = "B" + to_string(boolCount);
         boolCount++;
     }
-    else
-    {
-        processError("genInternalName recieved a non legal stype");
-    }
+    
     
     return ret;
 }
 void Compiler::processError(string err)
 {
-    
+    //Error: Line 7: ":" expected
+   //listingFile << "Error: Line " << lineNo << ": " << err << "/n";
+  // exit(EXIT_FAILURE);
 }
