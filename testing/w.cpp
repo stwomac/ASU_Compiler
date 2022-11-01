@@ -3,13 +3,15 @@
 #include <fstream>
 #include <string>
 #include <map>
+#include <iomanip>
 
 using namespace std;
 
+/*NOTES FOR JP nextToken, nextChar, and isSpecialSymbol are done*/
 
 Compiler::Compiler(char **argv) // constructor
 {
-    sourceFile.open(argv[1]);
+   sourceFile.open(argv[1]);
    listingFile.open(argv[2]);
    objectFile.open(argv[3]);
 }
@@ -28,7 +30,15 @@ void Compiler::createListingHeader()
 
 void Compiler::parser()
 {
-    
+   nextChar();
+   
+   while (ch != END_OF_FILE)
+   {
+      nextToken();
+      string s = token;
+   
+      cout <<endl << s << endl;
+   }
 }
 
 void Compiler::createListingTrailer()
@@ -85,7 +95,16 @@ bool Compiler::isKeyword(string s) const  // determines if s is a keyword
 
 bool Compiler::isSpecialSymbol(char c) const // determines if c is a special symbol
 {
-    return true;
+    if( c == '=' ||
+        c == ':' ||
+        c == ',' ||
+        c == ';' ||
+        c == '.' ||
+        c == '+' ||
+        c == '-')
+    {return true;}
+    
+    return false;
 }
 
 bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id
@@ -153,18 +172,127 @@ void Compiler::emitStorage()
 // Lexical routines
 char Compiler::nextChar() // returns the next character or END_OF_FILE marker
 {
-    return 'a';
+    sourceFile.get(ch);
+    
+    static char preCh = '\n';
+    
+    if(sourceFile.eof())
+    {
+       ch = END_OF_FILE;
+       return ch;
+    }
+    
+    if(preCh == '\n')
+    {
+       lineNo++;
+       listingFile << setw(5) << lineNo << '|';
+    }
+    
+    listingFile << ch;
+    
+    preCh = ch;
+    //cout << ch << '|';
+    return ch;
 }
 
 string Compiler::nextToken() // returns the next token or END_OF_FILE marker
 {
-    return "";
+    token = "";
+    
+    while(token == "")
+    {
+       if(ch == '{')
+       {
+          while(ch != END_OF_FILE && ch != '}')
+          {
+             nextChar();
+          }
+          
+          if(ch == END_OF_FILE)
+          {
+             processError("unexpected end of file");
+          }
+          else
+          {
+             nextChar();
+          }
+       }
+       else if (ch == '}')
+       {
+          processError("'}' cannot begin token");
+       }
+       else if(isspace(ch))
+       {
+          nextChar();
+       }
+       else if(isSpecialSymbol(ch))
+       {
+          token = ch;
+          nextChar();
+       }
+       else if(islower(ch)) 
+       {
+          
+          token = ch;
+          nextChar();
+          
+          while( (islower(ch) || isdigit(ch) || ch == '_') && ch!= END_OF_FILE)
+          {
+             token += ch;
+             nextChar();
+          }
+          
+          if(ch == END_OF_FILE)
+          {processError("unexpected end of file");}
+       }
+       else if(isdigit(ch))
+       {
+          token = ch;
+          nextChar();
+          
+          while(isdigit(ch) && ch!= END_OF_FILE)
+          {
+             token += ch;
+             nextChar();
+          }
+          
+          if(ch == END_OF_FILE)
+          {processError("unexpected end of file");}
+       }
+       else if(ch == END_OF_FILE)
+       {token = ch;}
+       else
+       {processError("illegal symbol");}
+    }
+    return token;
 }
 
 // Other routines
 string Compiler::genInternalName(storeTypes stype) const
 {
-    return "";
+    static int intCount = 0;
+    
+    static int boolCount = 0;
+    
+    string ret;
+    
+    if(stype == INTEGER)
+    {
+        
+        ret = "I" + to_string(intCount);
+        intCount++;
+    }
+    else if( stype == BOOLEAN )
+    {
+        ret = "I" + to_string(boolCount);
+        boolCount++;
+    }
+    else
+    {
+        processError("genInternalName recieved a non legal stype");
+    }
+    
+    return ret;
 }
 void Compiler::processError(string err)
 {

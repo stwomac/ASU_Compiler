@@ -9,16 +9,12 @@ using namespace std;
 
 Compiler::Compiler(char **argv) // constructor
 {
-    sourceFile.open(argv[1]);
-   listingFile.open(argv[2]);
-   objectFile.open(argv[3]);
+    cout<< "what" << endl;
 }
 
 Compiler::~Compiler()           // destructor
 {
-   sourceFile.close();
-   listingFile.close();
-   objectFile.close();
+    
 }
 
 void Compiler::createListingHeader()
