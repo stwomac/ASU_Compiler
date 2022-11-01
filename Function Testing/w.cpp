@@ -7,6 +7,7 @@
 
 using namespace std;
 
+/*NOTES FOR JP nextToken, nextChar, and isSpecialSymbol are done*/
 
 Compiler::Compiler(char **argv) // constructor
 {
@@ -17,7 +18,7 @@ Compiler::Compiler(char **argv) // constructor
 
 Compiler::~Compiler()           // destructor
 {
-    sourceFile.close();
+   sourceFile.close();
    listingFile.close();
    objectFile.close();
 }
@@ -29,9 +30,14 @@ void Compiler::createListingHeader()
 
 void Compiler::parser()
 {
-   while(ch != END_OF_FILE)
-   {  
-      nextChar();
+   nextChar();
+   
+   while (ch != END_OF_FILE)
+   {
+      nextToken();
+      string s = token;
+   
+      cout <<endl << s << endl;
    }
 }
 
@@ -89,7 +95,16 @@ bool Compiler::isKeyword(string s) const  // determines if s is a keyword
 
 bool Compiler::isSpecialSymbol(char c) const // determines if c is a special symbol
 {
-    return true;
+    if( c == '=' ||
+        c == ':' ||
+        c == ',' ||
+        c == ';' ||
+        c == '.' ||
+        c == '+' ||
+        c == '-')
+    {return true;}
+    
+    return false;
 }
 
 bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id
@@ -176,13 +191,80 @@ char Compiler::nextChar() // returns the next character or END_OF_FILE marker
     listingFile << ch;
     
     preCh = ch;
-    
+    //cout << ch << '|';
     return ch;
 }
 
 string Compiler::nextToken() // returns the next token or END_OF_FILE marker
 {
-    return "";
+    token = "";
+    
+    while(token == "")
+    {
+       if(ch == '{')
+       {
+          while(ch != END_OF_FILE && ch != '}')
+          {
+             nextChar();
+          }
+          
+          if(ch == END_OF_FILE)
+          {
+             processError("unexpected end of file");
+          }
+          else
+          {
+             nextChar();
+          }
+       }
+       else if (ch == '}')
+       {
+          processError("'}' cannot begin token");
+       }
+       else if(isspace(ch))
+       {
+          nextChar();
+       }
+       else if(isSpecialSymbol(ch))
+       {
+          token = ch;
+          nextChar();
+       }
+       else if(islower(ch)) 
+       {
+          
+          token = ch;
+          nextChar();
+          
+          while( (islower(ch) || isdigit(ch) || ch == '_') && ch!= END_OF_FILE)
+          {
+             token += ch;
+             nextChar();
+          }
+          
+          if(ch == END_OF_FILE)
+          {processError("unexpected end of file");}
+       }
+       else if(isdigit(ch))
+       {
+          token = ch;
+          nextChar();
+          
+          while(isdigit(ch) && ch!= END_OF_FILE)
+          {
+             token += ch;
+             nextChar();
+          }
+          
+          if(ch == END_OF_FILE)
+          {processError("unexpected end of file");}
+       }
+       else if(ch == END_OF_FILE)
+       {token = ch;}
+       else
+       {processError("illegal symbol");}
+    }
+    return token;
 }
 
 // Other routines
