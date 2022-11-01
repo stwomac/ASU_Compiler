@@ -91,7 +91,7 @@ void Compiler::consts()         // stage 0, production 3                        
 {
    if (token != "const")
       processError("keyword \"const\" expected")
-   if (!isNonKeyId(token)) 		//pseudo is !isNonKeyId(nextToken())
+   if (!isNonKeyId(nextToken())) 		//pseudo is !isNonKeyId(nextToken())
       processError("non-keyword identifier must follow \"const\"")
    constStmts()
 }
@@ -100,7 +100,7 @@ void Compiler::vars()           // stage 0, production 4                        
 {
    if (token != "var")
       processError("keyword \"var\" expected")
-   if (!isNonKeyId(token)) //psuedo is !isNonKeyId(nextToken())
+   if (!isNonKeyId(nextToken())) //psuedo is !isNonKeyId(nextToken())
       processError("non-keyword identifier must follow \"var\"")
    varStmts()
 }
@@ -109,15 +109,15 @@ void Compiler::beginEndStmt()   // stage 0, production 5                        
 {
    if (token != "begin")
       procesError("keyword \"begin\" expected")
-   if (nextToken() != "end")
+   if (nextToken() != "end")						//follows psuedocode
       processError("keyword \"end\" expected")
-   if (nextToken() != ".")
+   if (nextToken() != ".")						//follows psuedocode
       processError("period expected")
    nextToken()
    code("end", ".")
 }
 
-void Compiler::constStmts()     // stage 0, production 6                                  //partially DONE, review line after "y = nextToken()" and insert after "if(!isInteger(y) || !isBoolean(y))
+void Compiler::constStmts()     // stage 0, production 6                                  //DONE ?, review insert after "if(!isInteger(y) || !isBoolean(y))
 {
    string x,y;
    if (!isNonKeyId(token))
@@ -126,7 +126,7 @@ void Compiler::constStmts()     // stage 0, production 6                        
    if (nextToken() != "=")
       processError("\"=\" expected")
    y = nextToken();
-   if (y is not one of "+","-","not",NON_KEY_ID,"true","false",INTEGER) //fix get clarification
+   if (y != "+" || y != "-" || y != "not" || !isNonKeyId(y) || y != "true" || y != "false" || !isInteger(y)) //please look at to see if you need " || " 's // I honestly believe you do
       processError("token to right of \"=\" illegal")
    if (y == "+" || y =="-") 
    {
@@ -170,7 +170,8 @@ void Compiler::varStmts()       // stage 0, production 7                        
    if (nextToken() != ";")
       processError("semicolon expected")
    insert(x,y,VARIABLE,"",YES,1)
-   if (!isNonKeyId(nextToken()) && nextToken() != "begin")  //look into multiple nextTokens() in if statments
+   nextToken()																	//can not really do nextToken() multiple times in one if, basically look at the same nextToken
+   if (!isNonKeyId(token) && token != "begin")  								//please look into if we need ||'s or &&'s
       processError("non-keyword identifier or \"begin\" expected")
    if (!isNonKeyId(token))
       varStmts()
