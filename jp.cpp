@@ -219,8 +219,16 @@ bool Compiler::isSpecialSymbol(char c) const // determines if c is a special sym
 
 bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id
 {
-	for(uint i = 1; i < s.length(); i++){
-		
+	//the start of a NON_KEY_ID starts with an alpha -> ALPHA ALPHANUMS || islowe()
+	if(!islower(s[0]) || (!isLower(s[s.length() - 1) || !isDigit(s[s.length - 1]))){
+		return false;
+	}
+	for(uint i = 1; i < s.length() - 2; i++){
+		if (s[i] == "_"){
+			if(s[i+1] == "_"){
+				return false;
+			}
+		}
 	}
     return true;
 }
