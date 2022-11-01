@@ -58,17 +58,17 @@ void Compiler::createListingTrailer()                                           
 // Methods implementing the grammar productions
 void Compiler::prog()           // stage 0, production 1                            //DONE   //check " if (token() != "$" "
 {
-   if (nextToken() != "program")
+   if (token != "program")
       processError("keyword \"program\" expected")
    progStmt()
-   if (nextToken() == "const")
+   if (token == "const")
       consts()
-   if (nextToken() == "var")
+   if (token == "var")
       vars()
-   if (nextToken() != "begin")
+   if (token != "begin")
       processError("keyword \"begin\" expected")
    beginEndStmt()
-   if (token() != "$")
+   if (token != "$")
       processError("no text may follow \"end\"")
 }
 
@@ -80,7 +80,7 @@ void Compiler::progStmt()       // stage 0, production 2                        
    x = NextToken()
    if (!isNonKeyId(token))
       processError("program name expected")
-   if (token != ";")
+   if (token != ";")			//psuedo is nextToken()
       processError("semicolon expected")
    nextToken();
    code("program", x);
@@ -91,7 +91,7 @@ void Compiler::consts()         // stage 0, production 3                        
 {
    if (token != "const")
       processError("keyword \"const\" expected")
-   if (!isNonKeyId(token)) 
+   if (!isNonKeyId(token)) 		//pseudo is !isNonKeyId(nextToken())
       processError("non-keyword identifier must follow \"const\"")
    constStmts()
 }
@@ -100,12 +100,12 @@ void Compiler::vars()           // stage 0, production 4                        
 {
    if (token != "var")
       processError("keyword \"var\" expected")
-   if (!isNonKeyId(token))
+   if (!isNonKeyId(token)) //psuedo is !isNonKeyId(nextToken())
       processError("non-keyword identifier must follow \"var\"")
    varStmts()
 }
 
-void Compiler::beginEndStmt()   // stage 0, production 5                                  //DONE
+void Compiler::beginEndStmt()   // stage 0, production 5                                  //DONE look into next token being in if statements
 {
    if (token != "begin")
       procesError("keyword \"begin\" expected")
@@ -123,7 +123,7 @@ void Compiler::constStmts()     // stage 0, production 6                        
    if (!isNonKeyId(token))
       processError("non-keyword identifier expected")
    x = token;
-   if (token != "=")
+   if (nextToken() != "=")
       processError("\"=\" expected")
    y = nextToken();
    if (y is not one of "+","-","not",NON_KEY_ID,"true","false",INTEGER) //fix get clarification
@@ -170,23 +170,23 @@ void Compiler::varStmts()       // stage 0, production 7                        
    if (nextToken() != ";")
       processError("semicolon expected")
    insert(x,y,VARIABLE,"",YES,1)
-   if (!isNonKeyId(nextToken()) && nextToken() != "begin")
+   if (!isNonKeyId(nextToken()) && nextToken() != "begin")  //look into multiple nextTokens() in if statments
       processError("non-keyword identifier or \"begin\" expected")
    if (!isNonKeyId(token))
       varStmts()
 }
 
-string Compiler::ids()          // stage 0, production 8
+string Compiler::ids()          // stage 0, production 8								//DONE POSSIBLY
 {
    string temp,tempString
-   if (token is not a NON_KEY_ID)
-      processError(non-keyword identifier expected)
+   if (!isNonKeyId(token)
+      processError("non-keyword identifier expected")
    tempString = token
    temp = token
    if (nextToken() == ",")
    {
-      if (nextToken() is not a NON_KEY_ID)
-         processError(non-keyword identifier expected)
+      if (!isNonKeyId(nextToken()))
+         processError("non-keyword identifier expected")
       tempString = temp + "," + ids()
    }
    return tempString
@@ -198,9 +198,18 @@ bool Compiler::isKeyword(string s) const  // determines if s is a keyword
     return true;
 }
 
-bool Compiler::isSpecialSymbol(char c) const // determines if c is a special symbol
+bool Compiler::isSpecialSymbol(char c) const // determines if c is a special symbol			//took from w.cpp at 1:00 pm 11-1-2022
 {
-    return true;
+    if( c == '=' ||
+        c == ':' ||
+        c == ',' ||
+        c == ';' ||
+        c == '.' ||
+        c == '+' ||
+        c == '-')
+    {return true;}
+    
+    return false;
 }
 
 bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id
@@ -322,62 +331,129 @@ void Compiler::emitStorage()
 
 
 // Lexical routines
-char Compiler::nextChar() // returns the next character or END_OF_FILE marker
+char Compiler::nextChar() // returns the next character or END_OF_FILE marker							//taken from w.cpp during 1:03 PM 11-1-2022
 {
-   read in next character
-   if end of file
-      ch = END_OF_FILE //use a special character to designate end of file
-   else
-      ch = next character
-   print to listing file (starting new line if necessary)
-   return ch;
+    sourceFile.get(ch);
+    
+    static char preCh = '\n';
+    
+    if(sourceFile.eof())
+    {
+       ch = END_OF_FILE;
+       return ch;
+    }
+    
+    if(preCh == '\n')
+    {
+       lineNo++;
+       listingFile << setw(5) << lineNo << '|';
+    }
+    
+    listingFile << ch;
+    
+    preCh = ch;
+    //cout << ch << '|';
+    return ch;
 }
 
-string Compiler::nextToken() // returns the next token or END_OF_FILE marker EDITED NOT CORRECT
+string Compiler::nextToken() // returns the next token or END_OF_FILE marker EDITED NOT CORRECT 		/taken from w.cpp during 1:03 PM 11-1-2022
 {
-   token = "";
-   while (token == "")
-   {
-      switch(ch)
-      {
-         case '{' : //process comment
-                  while (ch != "$" && ch != "}")
-                  { ``
-                     nextChar()
-                  }
-                  if (ch == END_OF_FILE)
-                     processError(unexpected end of file)
-                  else
-                     nextChar()
-         case '}' : processError('}' cannot begin token)
-         case isspace(ch) : nextChar()
-         case isSpecialSymbol(ch): token = ch;
-                                   nextChar()
-         case islower(ch) : token = ch;
-                           while (nextChar() is one of letter, digit, or '_' but not END_OF_FILE)
-                           {
-                                 token+=ch
-                           }
-                           if (ch is END_OF_FILE)
-                              processError(unexpected end of file)
-         case isdigit(ch) : token = ch;
-         while (nextChar() is digit but not END_OF_FILE)
-         {
-            token+=ch
-         }
-         if (ch is END_OF_FILE)
-            processError(unexpected end of file)
-         case END_OF_FILE : token = ch
-         default : processError(illegal symbol)
-      }
-   }
-   return token;
+    token = "";
+    
+    while(token == "")
+    {
+       if(ch == '{')
+       {
+          while(ch != END_OF_FILE && ch != '}')
+          {
+             nextChar();
+          }
+          
+          if(ch == END_OF_FILE)
+          {
+             processError("unexpected end of file");
+          }
+          else
+          {
+             nextChar();
+          }
+       }
+       else if (ch == '}')
+       {
+          processError("'}' cannot begin token");
+       }
+       else if(isspace(ch))
+       {
+          nextChar();
+       }
+       else if(isSpecialSymbol(ch))
+       {
+          token = ch;
+          nextChar();
+       }
+       else if(islower(ch)) 
+       {
+          
+          token = ch;
+          nextChar();
+          
+          while( (islower(ch) || isdigit(ch) || ch == '_') && ch!= END_OF_FILE)
+          {
+             token += ch;
+             nextChar();
+          }
+          
+          if(ch == END_OF_FILE)
+          {processError("unexpected end of file");}
+       }
+       else if(isdigit(ch))
+       {
+          token = ch;
+          nextChar();
+          
+          while(isdigit(ch) && ch!= END_OF_FILE)
+          {
+             token += ch;
+             nextChar();
+          }
+          
+          if(ch == END_OF_FILE)
+          {processError("unexpected end of file");}
+       }
+       else if(ch == END_OF_FILE)
+       {token = ch;}
+       else
+       {processError("illegal symbol");}
+    }
+    return token;
 }
 
 // Other routines
-string Compiler::genInternalName(storeTypes stype) const
+string Compiler::genInternalName(storeTypes stype) const								//took from w.cpp 1:01PM 11-1-2022
 {
-    return "";
+    static int intCount = 0;
+    
+    static int boolCount = 0;
+    
+    string ret;
+    
+    if(stype == INTEGER)
+    {
+        
+        ret = "I" + to_string(intCount);
+        intCount++;
+    }
+    else if( stype == BOOLEAN )
+    {
+        ret = "I" + to_string(boolCount);
+        boolCount++;
+    }
+    else
+    {
+        processError("genInternalName recieved a non legal stype");
+    }
+    
+    return ret;
 }
 void Compiler::processError(string err)
 {
