@@ -1,16 +1,25 @@
 #include <stage0.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <map>
+#include <iomanip>
 
 using namespace std;
 
 
 Compiler::Compiler(char **argv) // constructor
 {
-    
+   sourceFile.open(argv[1]);
+   listingFile.open(argv[2]);
+   objectFile.open(argv[3]);
 }
 
 Compiler::~Compiler()           // destructor
 {
-    
+    sourceFile.close();
+   listingFile.close();
+   objectFile.close();
 }
 
 void Compiler::createListingHeader()
@@ -20,7 +29,10 @@ void Compiler::createListingHeader()
 
 void Compiler::parser()
 {
-    
+   while(ch != END_OF_FILE)
+   {  
+      nextChar();
+   }
 }
 
 void Compiler::createListingTrailer()
@@ -115,23 +127,23 @@ string Compiler::whichValue(string name) // tells which value a name has
     return "";
 }
 
-void Compiler::code(string op, string operand1 = "", string operand2 = "")
+void Compiler::code(string op, string operand1 , string operand2 )
 {
     
 }
 
 // Emit Functions
-void Compiler::emit(string label = "", string instruction = "", string operands = "", string comment = "")
+void Compiler::emit(string label , string instruction , string operands , string comment )
 {
     
 }
 
-void Compiler::emitPrologue(string progName, string = "")
+void Compiler::emitPrologue(string progName, string s)
 {
     
 }
 
-void Compiler::emitEpilogue(string = "", string = "")
+void Compiler::emitEpilogue(string a, string b)
 {
     
 }
@@ -145,7 +157,27 @@ void Compiler::emitStorage()
 // Lexical routines
 char Compiler::nextChar() // returns the next character or END_OF_FILE marker
 {
-    return 'a';
+    sourceFile.get(ch);
+    
+    static char preCh = '\n';
+    
+    if(sourceFile.eof())
+    {
+       ch = END_OF_FILE;
+       return ch;
+    }
+    
+    if(preCh == '\n')
+    {
+       lineNo++;
+       listingFile << setw(5) << lineNo << '|';
+    }
+    
+    listingFile << ch;
+    
+    preCh = ch;
+    
+    return ch;
 }
 
 string Compiler::nextToken() // returns the next token or END_OF_FILE marker
