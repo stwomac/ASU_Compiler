@@ -7,38 +7,46 @@
 using namespace std;
 
 
-Compiler::Compiler(char **argv) // constructor
+Compiler::Compiler(char **argv) // constructor                                   //DONE
 {
-   if(argc >= 1){
+   if (argc >= 3){
       sourceFile = open(argv[1]);
+      listingFile = open(argv[2]);
+      objectFile = open(argv[3]);
    }
 }
 
-Compiler::~Compiler()           // destructor
+Compiler::~Compiler()           // destructor                                    //DONE
 {
-   if(soureFile_isOpen()){
+   if(soureFile.is_open()){
       sourceFile.close();
    }
+   if(listingFile.is_open()){
+      listingFile.close();
+   }
+   if(objectFile.is_open()){
+      objectFile.close();
+   }
 }
 
-void Compiler::createListingHeader()
+void Compiler::createListingHeader()                                             //DONE
 {
    cout << "STAGE0:" << "JohnPaul Flores, Steven Womack" << ctime << endl;
    print "LINE " << lineNo << ":" << "SOURCE STATEMENT" << endl;
    //line numbers and source statements should be aligned under the headings 
 }
-void Compiler::parser()
+void Compiler::parser()                                                          //possibly done? come back to
 {
-   nextChar()
+   nextChar();
    //ch must be initialized to the first character of the source file
    if (nextToken() != "program")
-      processError(keyword "program" expected)
-   //a call to nextToken() has two effects
-   // (1) the variable, token, is assigned the value of the next token
-   // (2) the next token is read from the source file in order to make
-   // the assignment. The value returned by nextToken() is also
-   // the next token.
-   prog()
+      processError("keyword \"program\" expected");
+      //a call to nextToken() has two effects
+      // (1) the variable, token, is assigned the value of the next token
+      // (2) the next token is read from the source file in order to make
+      // the assignment. The value returned by nextToken() is also
+      // the next token.
+   prog();
    //parser implements the grammar rules, calling first rule
 }
 
@@ -48,114 +56,114 @@ void Compiler::createListingTrailer()                                           
 }
 
 // Methods implementing the grammar productions
-void Compiler::prog()           // stage 0, production 1
+void Compiler::prog()           // stage 0, production 1                            //DONE   //check " if (token() != "$" "
 {
-    if (token != "program")
-       processError(keyword "program" expected)
-       progStmt()
-    if (token == "const")
+   if (nextToken() != "program")
+      processError("keyword \"program\" expected")
+   progStmt()
+   if (nextToken() == "const")
       consts()
-    if (token == "var")
+   if (nextToken() == "var")
       vars()
-    if (token != "begin")
-      processError(keyword "begin" expected)
-      beginEndStmt()
-    if (token != END_OF_FILE)
-      processError(no text may follow "end”)
+   if (nextToken() != "begin")
+      processError("keyword \"begin\" expected")
+   beginEndStmt()
+   if (token() != "$")
+      processError("no text may follow \"end\"")
 }
 
-void Compiler::progStmt()       // stage 0, production 2
+void Compiler::progStmt()       // stage 0, production 2                               //ask about NON_KEY_ID, PROG_NAME, CONSTANT, X, NO
 {
    string x
-   if (token != "program")
-      processError(keyword "program" expected)
+   if (getToken() != "program")
+      processError("keyword \"program\" expected")
    x = NextToken()
-   if (token is not a NON_KEY_ID)
-      processError(program name expected)
+   if (token != NON_KEY_ID) //fix
+      processError("program name expected")
    if (nextToken() != ";")
-      processError(semicolon expected)
-   nextToken()
-   code("program", x)
-   insert(x,PROG_NAME,CONSTANT,x,NO,0)
+      processError("semicolon expected")
+   nextToken();
+   code("program", x);
+   insert(x,PROG_NAME,CONSTANT,x,NO,0);
 }
 
-void Compiler::consts()         // stage 0, production 3
+void Compiler::consts()         // stage 0, production 3                                  //need to identify if token is a NON_KEY_ID
 {
    if (token != "const")
-      processError(keyword "const" expected)
-   if (nextToken() is not a NON_KEY_ID)
-      processError(non-keyword identifier must follow "const")
+      processError("keyword \"const\" expected")
+   if (nextToken() is not a NON_KEY_ID) //fix
+      processError("non-keyword identifier must follow \"const\"")
    constStmts()
 }
 
-void Compiler::vars()           // stage 0, production 4
+void Compiler::vars()           // stage 0, production 4                                  //need to identify if token is a NON_KEY_ID
 {
    if (token != "var")
-      processError(keyword "var" expected)
+      processError("keyword \"var\" expected")
    if (nextToken() is not a NON_KEY_ID)
-      processError(non-keyword identifier must follow "var")
+      processError("non-keyword identifier must follow \"var\"")
    varStmts()
 }
 
-void Compiler::beginEndStmt()   // stage 0, production 5
+void Compiler::beginEndStmt()   // stage 0, production 5                                  //DONE
 {
    if (token != "begin")
-      procesError(keyword "begin" expected)
+      procesError("keyword \"begin\" expected")
    if (nextToken() != "end")
-      processError(keyword "end" expected)
+      processError("keyword \"end\" expected")
    if (nextToken() != ".")
-      processError(period expected)
-     nextToken()
+      processError("period expected")
+   nextToken()
    code("end", ".")
 }
 
-void Compiler::constStmts()     // stage 0, production 6
+void Compiler::constStmts()     // stage 0, production 6                                  //need to identify if token is a NON_KEY_ID or INTEGER or BOOLEAN
 {
    string x,y
-   if (token is not a NON_KEY_ID)
-      processError(non-keyword identifier expected)
+   if (token is not a NON_KEY_ID) //fix
+      processError("non-keyword identifier expected")
    x = token
    if (nextToken() != "=")
-      processError("=" expected)
+      processError("\"=\" expected")
    y = nextToken()
-   if (y is not one of "+","-","not",NON_KEY_ID,"true","false",INTEGER)
-      processError(token to right of "=" illegal)
-   if (y is one of "+","-")
+   if (y is not one of "+","-","not",NON_KEY_ID,"true","false",INTEGER) //fix
+      processError("token to right of \"=\" illegal")
+   if (y is one of "+","-") //fix
    {
-      if (nextToken() is not an INTEGER)
-         processError(integer expected after sign)
+      if (nextToken() is not an INTEGER) //fix
+         processError("integer expected after sign")
       y = y + token;
    }
    if (y == "not")
    {
-      if (nextToken() is not a BOOLEAN)
-         processError(boolean expected after “not”)
+      if (nextToken() is not a BOOLEAN) //fix
+         processError("boolean expected after \"not\"")
       if (token == "true")
          y = "false"
       else
          y = "true"
    }
    if (nextToken() != ";")
-      processError(semicolon expected)
-   if (the data type of y is not INTEGER or BOOLEAN)
-      processError(data type of token on the right-hand side must be INTEGER or BOOLEAN)
-   insert(x,whichType(y),CONSTANT,whichValue(y),YES,1)
+      processError("semicolon expected")
+   if (the data type of y is not INTEGER or BOOLEAN) //fix
+      processError("data type of token on the right-hand side must be INTEGER or BOOLEAN")
+   insert(x,whichType(y),CONSTANT,whichValue(y),YES,1) //review
    x = nextToken()
-   if (x is not one of "begin","var",NON_KEY_ID)
-      processError(non-keyword identifier, "begin", or "var" expected)
+   if (x is not one of "begin","var",NON_KEY_ID) //fix
+      processError("non-keyword identifier, \"begin\", or \"var\" expected");
    if (x is a NON_KEY_ID)
       constStmts()
 }
 
-void Compiler::varStmts()       // stage 0, production 7
+void Compiler::varStmts()       // stage 0, production 7                                  //need to identify if token is a NON_KEY_ID or INTEGER or BOOLEAN or VARIABLE
 {
    string x,y
-   if (token is not a NON_KEY_ID)
+   if (token is not a NON_KEY_ID) //fix
       processError(non-keyword identifier expected)
-   x = ids()
+   x = ids();
    if (token != ":")
       processError(":" expected)
-   if (nextToken() is not one of "integer","boolean")
+   if (nextToken() is not one of "integer","boolean") //fix
       processError(illegal type follows ":")
      y = token
    if (nextToken() != ";")
@@ -371,4 +379,4 @@ string Compiler::genInternalName(storeTypes stype) const
 void Compiler::processError(string err)
 {
     
-}  code(
+}
