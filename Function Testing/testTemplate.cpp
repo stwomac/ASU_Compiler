@@ -9,14 +9,14 @@ using namespace std;
 
 Compiler::Compiler(char **argv) // constructor
 {
-    sourceFile.open(argv[1]);
+   sourceFile.open(argv[1]);
    listingFile.open(argv[2]);
    objectFile.open(argv[3]);
 }
 
 Compiler::~Compiler()           // destructor
 {
-   sourceFile.close();
+    sourceFile.close();
    listingFile.close();
    objectFile.close();
 }
@@ -28,7 +28,12 @@ void Compiler::createListingHeader()
 
 void Compiler::parser()
 {
-    
+   int i = 5;
+    while(i > 0)
+   {  
+      cout << i << endl;
+      i--;
+   }
 }
 
 void Compiler::createListingTrailer()
