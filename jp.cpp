@@ -72,35 +72,35 @@ void Compiler::prog()           // stage 0, production 1                        
       processError("no text may follow \"end\"")
 }
 
-void Compiler::progStmt()       // stage 0, production 2                               //ask about NON_KEY_ID, PROG_NAME, CONSTANT, X, NO
+void Compiler::progStmt()       // stage 0, production 2                               //ask about PROG_NAME, CONSTANT, X, NO
 {
    string x
-   if (getToken() != "program")
+   if (token != "program")
       processError("keyword \"program\" expected")
    x = NextToken()
-   if (token != NON_KEY_ID) //fix
+   if (!isNonKeyId(token))
       processError("program name expected")
-   if (nextToken() != ";")
+   if (token != ";")
       processError("semicolon expected")
    nextToken();
    code("program", x);
-   insert(x,PROG_NAME,CONSTANT,x,NO,0);
+   insert(x,PROG_NAME,CONSTANT,x,NO,0); //fix
 }
 
-void Compiler::consts()         // stage 0, production 3                                  //need to identify if token is a NON_KEY_ID
+void Compiler::consts()         // stage 0, production 3                                  //DONE
 {
    if (token != "const")
       processError("keyword \"const\" expected")
-   if (nextToken() is not a NON_KEY_ID) //fix
+   if (!isNonKeyId(token)) 
       processError("non-keyword identifier must follow \"const\"")
    constStmts()
 }
 
-void Compiler::vars()           // stage 0, production 4                                  //need to identify if token is a NON_KEY_ID
+void Compiler::vars()           // stage 0, production 4                                  //DONE
 {
    if (token != "var")
       processError("keyword \"var\" expected")
-   if (nextToken() is not a NON_KEY_ID)
+   if (!isNonKeyId(token))
       processError("non-keyword identifier must follow \"var\"")
    varStmts()
 }
@@ -117,61 +117,62 @@ void Compiler::beginEndStmt()   // stage 0, production 5                        
    code("end", ".")
 }
 
-void Compiler::constStmts()     // stage 0, production 6                                  //need to identify if token is a NON_KEY_ID or INTEGER or BOOLEAN
+void Compiler::constStmts()     // stage 0, production 6                                  //partially DONE, review line after "y = nextToken()" and insert after "if(!isInteger(y) || !isBoolean(y))
 {
-   string x,y
-   if (token is not a NON_KEY_ID) //fix
+   string x,y;
+   if (!isNonKeyId(token))
       processError("non-keyword identifier expected")
-   x = token
-   if (nextToken() != "=")
+   x = token;
+   if (token != "=")
       processError("\"=\" expected")
-   y = nextToken()
-   if (y is not one of "+","-","not",NON_KEY_ID,"true","false",INTEGER) //fix
+   y = nextToken();
+   if (y is not one of "+","-","not",NON_KEY_ID,"true","false",INTEGER) //fix get clarification
       processError("token to right of \"=\" illegal")
-   if (y is one of "+","-") //fix
+   if (y == "+" || y =="-") 
    {
-      if (nextToken() is not an INTEGER) //fix
+      if (!isInteger(nextToken())) 
          processError("integer expected after sign")
       y = y + token;
    }
    if (y == "not")
    {
-      if (nextToken() is not a BOOLEAN) //fix
+      if (!isBoolean(nextToken())
          processError("boolean expected after \"not\"")
-      if (token == "true")
+      if (token == "true");
          y = "false"
       else
-         y = "true"
+         y = "true";
    }
    if (nextToken() != ";")
       processError("semicolon expected")
-   if (the data type of y is not INTEGER or BOOLEAN) //fix
-      processError("data type of token on the right-hand side must be INTEGER or BOOLEAN")
+   if (!isInteger(y) || !isBoolean(y))
+      processError("data type of token on the right-hand side must be INTEGER or BOOLEAN");
    insert(x,whichType(y),CONSTANT,whichValue(y),YES,1) //review
-   x = nextToken()
-   if (x is not one of "begin","var",NON_KEY_ID) //fix
+   x = nextToken();
+   if (!isNonKeyId(x) || x != "begin" || x != "var")
       processError("non-keyword identifier, \"begin\", or \"var\" expected");
-   if (x is a NON_KEY_ID)
-      constStmts()
+   if (isNonKeyId(x))
+      constStmts();
 }
 
-void Compiler::varStmts()       // stage 0, production 7                                  //need to identify if token is a NON_KEY_ID or INTEGER or BOOLEAN or VARIABLE
+void Compiler::varStmts()       // stage 0, production 7                                  //reveiw x, y, VARIABLE, YES. partially done, check for any || before this as of
+                                                                                          //10-31-2022
 {
    string x,y
-   if (token is not a NON_KEY_ID) //fix
-      processError(non-keyword identifier expected)
+   if (!isNonKeyId(token)) //fix
+      processError("non-keyword identifier expected")
    x = ids();
    if (token != ":")
       processError(":" expected)
-   if (nextToken() is not one of "integer","boolean") //fix
-      processError(illegal type follows ":")
-     y = token
+   if (!isBoolean(nextToken()) && !isInteger(nextToken()))
+      processError("illegal type follows \":\"")
+   y = token
    if (nextToken() != ";")
-      processError(semicolon expected)
+      processError("semicolon expected")
    insert(x,y,VARIABLE,"",YES,1)
-   if (nextToken() is not one of "begin",NON_KEY_ID)
-      processError(non-keyword identifier or "begin" expected)
-   if (token is a NON_KEY_ID)
+   if (!isNonKeyId(nextToken()) && nextToken() != "begin")
+      processError("non-keyword identifier or \"begin\" expected")
+   if (!isNonKeyId(token))
       varStmts()
 }
 
@@ -369,6 +370,7 @@ string Compiler::nextToken() // returns the next token or END_OF_FILE marker
          default : processError(illegal symbol)
       }
    }
+   return token;
 }
 
 // Other routines
