@@ -3,13 +3,14 @@
 #include <fstream>
 #include <string>
 #include <map>
+#include <ctype.h>
 
 using namespace std;
 
 
 Compiler::Compiler(char **argv) // constructor                                   //DONE
 {
-   if (argc >= 3){
+   if (argc != 4){
       sourceFile = open(argv[1]);
       listingFile = open(argv[2]);
       objectFile = open(argv[3]);
@@ -194,9 +195,12 @@ string Compiler::ids()          // stage 0, production 8								//DONE POSSIBLY
 }
 
 // Helper functions for the Pascallite lexicon
-bool Compiler::isKeyword(string s) const  // determines if s is a keyword
+bool Compiler::isKeyword(string s) const  // determines if s is a keyword					//DONE
 {
-    return true;
+	if (s == "program" || s == "begin" || s == "end" || s == "var" || s == "const" || s == "integer" || s == "boolean" || s == "true" || s == "false" || s == "note")
+		return true;
+	else
+		return false;
 }
 
 bool Compiler::isSpecialSymbol(char c) const // determines if c is a special symbol			//took from w.cpp at 1:00 pm 11-1-2022
@@ -215,17 +219,28 @@ bool Compiler::isSpecialSymbol(char c) const // determines if c is a special sym
 
 bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id
 {
+	for(uint i = 1; i < s.length(); i++){
+		
+	}
     return true;
 }
 
-bool Compiler::isInteger(string s) const  // determines if s is an integer
+bool Compiler::isInteger(string s) const  // determines if s is an integer				//DONE
 {
+	for(uint i = 0; i < s.length(); i++){
+		if (!isdigit(s[i]))
+			return false
+		}
+	}
     return true;
 }
 
-bool Compiler::isBoolean(string s) const  // determines if s is a boolean
+bool Compiler::isBoolean(string s) const  // determines if s is a boolean				//DONE
 {
-    return true;
+	if (s == "true" || s == "false")
+		return true;
+	else
+		return false;
 }
 
 bool Compiler::isLiteral(string s) const  // determines if s is a literal
@@ -239,7 +254,7 @@ void Compiler::insert(string externalName, storeTypes inType, modes inMode, stri
    //create symbol table entry for each identifier in list of external names
    //Multiply inserted names are illegal
    string name
-   while (name broken from list of external names and put into name != "")
+   while (name broken from list of external names and put into name != "")o
    {
       if (symbolTable[name] is defined)
          processError(multiple name definition)
@@ -460,5 +475,5 @@ void Compiler::processError(string err)
 {
    //Error: Line 7: ":" expected
    listingFile << "Error: Line " << lineNo << ": " << err << "/n";
-   exit();
+   exit(EXIT_FAILURE);
 }
