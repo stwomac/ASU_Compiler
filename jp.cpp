@@ -333,7 +333,7 @@ char Compiler::nextChar() // returns the next character or END_OF_FILE marker
    return ch;
 }
 
-string Compiler::nextToken() // returns the next token or END_OF_FILE marker
+string Compiler::nextToken() // returns the next token or END_OF_FILE marker EDITED NOT CORRECT
 {
    token = "";
    while (token == "")
@@ -341,8 +341,9 @@ string Compiler::nextToken() // returns the next token or END_OF_FILE marker
       switch(ch)
       {
          case '{' : //process comment
-                  while (nextChar() is not one of END_OF_FILE, '}'
-                  { //empty body 
+                  while (ch != "$" && ch != "}")
+                  { ``
+                     nextChar()
                   }
                   if (ch == END_OF_FILE)
                      processError(unexpected end of file)
@@ -380,5 +381,7 @@ string Compiler::genInternalName(storeTypes stype) const
 }
 void Compiler::processError(string err)
 {
-    
+   //Error: Line 7: ":" expected
+   listingFile << "Error: Line " << lineNo << ": " << err << "/n";
+   exit();
 }
