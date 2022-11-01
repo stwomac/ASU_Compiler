@@ -217,10 +217,10 @@ bool Compiler::isSpecialSymbol(char c) const // determines if c is a special sym
     return false;
 }
 
-bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id
+bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id			//DONE
 {
-	//the start of a NON_KEY_ID starts with an alpha -> ALPHA ALPHANUMS || islowe()
-	if(!islower(s[0]) || (!isLower(s[s.length() - 1) || !isDigit(s[s.length - 1]))){
+	//the start of a NON_KEY_ID starts with an alpha -> ALPHA ALPHANUMS || islower()
+	if(!islower(s[0]) || (!isLower(s[s.length() - 1]) || !isDigit(s[s.length - 1]))){
 		return false;
 	}
 	for(uint i = 1; i < s.length() - 2; i++){
@@ -251,9 +251,23 @@ bool Compiler::isBoolean(string s) const  // determines if s is a boolean				//D
 		return false;
 }
 
-bool Compiler::isLiteral(string s) const  // determines if s is a literal
+bool Compiler::isLiteral(string s) const  // determines if s is a literal				//DONE
 {
-    return true;
+	// if s[0] == + or -, check +[possibilities] to be integer
+	if(s[0] == '+' || s[0] == '-'){			
+		if(isInteger(s.substr(1, s.length() - 1))){
+			return true;
+	
+	// if straight bool or int then your fine
+	if(isBoolean(s) || isInteger(s))
+		return true;
+	
+	// if it starts with not, the rest should be a bool
+	if(s.substr(0, 3) == "not"){
+		if(isBoolean(s.substr(4, s.length() - 4))){
+			return true;
+		
+	
 }
 
 // Action routines
