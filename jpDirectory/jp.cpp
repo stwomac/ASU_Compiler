@@ -38,6 +38,18 @@ void Compiler::createListingHeader()                                            
 }
 void Compiler::parser()                                                          //possibly done? come back to
 {
+     nextToken();
+	 
+	 //cout << endl << token;
+    //if(token == 'var')
+    cout << token <<  " ";
+    if(token == "var")
+    {continue;}
+    if(isNonKeyId(token))   
+      cout << endl << ids() << endl << endl;
+    //cout << "Next?" << endl;  
+     
+	/*
    nextChar();
    //ch must be initialized to the first character of the source file
    if (nextToken() != "program")
@@ -49,6 +61,7 @@ void Compiler::parser()                                                         
       // the next token.
    prog();
    //parser implements the grammar rules, calling first rule
+	*/
 }
 
 void Compiler::createListingTrailer()                                               //DONE
@@ -202,7 +215,7 @@ bool Compiler::isKeyword(string s) const  // determines if s is a keyword					//
 	else
 		return false;
 }
-
+//DONE AND TESTED
 bool Compiler::isSpecialSymbol(char c) const // determines if c is a special symbol			//took from w.cpp at 1:00 pm 11-1-2022
 {
     if( c == '=' ||
@@ -216,16 +229,22 @@ bool Compiler::isSpecialSymbol(char c) const // determines if c is a special sym
     
     return false;
 }
-
+//DONE AND TESTED
 bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id			//DONE
 {
-	//the start of a NON_KEY_ID starts with an alpha -> ALPHA ALPHANUMS || islower()
-	if(!islower(s[0]) || (!isLower(s[s.length() - 1]) || !isDigit(s[s.length - 1]))){
+   //cout << "|hi|";
+	if(!islower(s[0]) ){
+      //cout << "F";
 		return false;
 	}
+   else if(!islower(s[s.length() - 1]) && !isdigit(s[s.length() - 1]))
+   {
+      return false;
+   }
+	//cout << "{str length: " << s.length() << " }";
 	for(uint i = 1; i < s.length() - 2; i++){
-		if (s[i] == "_"){
-			if(s[i+1] == "_"){
+		if (s[i] == '_'){
+			if(s[i+1] == '_'){
 				return false;
 			}
 		}
@@ -331,11 +350,18 @@ void Compiler::code(string op, string operand1 , string operand2 )
 // Emit Functions
 void Compiler::emit(string label , string instruction , string operands , string comment )
 {
+   objectFile << left;
+   objectFile << setw(8) << label;
+   objectFile << setw(8) << instruction;
+   objectFile << setw(24) << operands;
+   objectFile << comment;
+   /*
    Turn on left justification in objectFile
    Output label in a field of width 8
    Output instruction in a field of width 8
    Output the operands in a field of width 24
    Output the comment
+   */
 }
 
 void Compiler::emitPrologue(string progName, string s)
@@ -369,6 +395,7 @@ void Compiler::emitStorage()
 
 
 // Lexical routines
+//DONE AND TESTED
 char Compiler::nextChar() // returns the next character or END_OF_FILE marker							//taken from w.cpp during 1:03 PM 11-1-2022
 {
     sourceFile.get(ch);
@@ -393,7 +420,7 @@ char Compiler::nextChar() // returns the next character or END_OF_FILE marker			
     //cout << ch << '|';
     return ch;
 }
-
+//DONE AND TESTED
 string Compiler::nextToken() // returns the next token or END_OF_FILE marker EDITED NOT CORRECT 		/taken from w.cpp during 1:03 PM 11-1-2022
 {
     token = "";
@@ -467,6 +494,7 @@ string Compiler::nextToken() // returns the next token or END_OF_FILE marker EDI
 }
 
 // Other routines
+//DONE AND TESTED
 string Compiler::genInternalName(storeTypes stype) const								//took from w.cpp 1:01PM 11-1-2022
 {
     static int intCount = 0;
@@ -483,13 +511,10 @@ string Compiler::genInternalName(storeTypes stype) const								//took from w.cp
     }
     else if( stype == BOOLEAN )
     {
-        ret = "I" + to_string(boolCount);
+        ret = "B" + to_string(boolCount);
         boolCount++;
     }
-    else
-    {
-        processError("genInternalName recieved a non legal stype");
-    }
+    
     
     return ret;
 }
