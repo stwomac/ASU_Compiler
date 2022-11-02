@@ -33,6 +33,7 @@ void Compiler::parser()
    /* IDS testing
    nextChar();
    
+   
    while (ch != END_OF_FILE)
    {
      nextToken();
@@ -48,6 +49,30 @@ void Compiler::parser()
      
    }
    */
+   
+   
+   
+   //insert testing
+    map<string, SymbolTableEntry>::iterator i;
+   insert("WORDS",INTEGER,VARIABLE,"",YES,1);
+   insert("ababa",INTEGER,VARIABLE,"",YES,1);
+   insert("huh",INTEGER,VARIABLE,"",YES,1);
+   insert("Wha",INTEGER,VARIABLE,"",YES,1);
+   insert("yyyyY",INTEGER,VARIABLE,"",YES,1);
+   
+   
+   
+   for(i= symbolTable.begin(); i != symbolTable.end(); i++)
+   {
+      cout << i->second.getInternalName() << endl;
+   }
+   
+   insert("yyyyY",INTEGER,VARIABLE,"",YES,1);
+   
+   for(i= symbolTable.begin(); i != symbolTable.end(); i++)
+   {
+      cout << i->second.getInternalName() << endl;
+   }
 }
 
 void Compiler::createListingTrailer()
@@ -125,7 +150,19 @@ string Compiler::ids()          // stage 0, production 8
 // Helper functions for the Pascallite lexicon
 bool Compiler::isKeyword(string s) const  // determines if s is a keyword
 {
-    return true;
+    if( s == "program" ||
+        s == "begin"   ||
+        s == "end"     ||
+        s == "var"     ||
+        s == "const"   ||
+        s == "integer" ||
+        s == "boolean" ||
+        s == "true"    ||
+        s == "false"   ||
+        s == "not")
+	{return true;}
+	
+	return false;
 }
 
 /*DONE AND TESTED*/
@@ -211,8 +248,48 @@ void Compiler::insert(string externalName, storeTypes inType, modes inMode, stri
    
    while(name != "")
    {
-      if(symbolTable.find(name) != symbolTable.end())
+      string tempName;
+      int i = name.find(",");
+      
+      if(name.length() <= 0)
+      {
+         name = "";
+         continue;
+      }
+      
+      if(i < 0 && name.length() > 0)
+      {
+         tempName = name;
+         name = "";
+      }
+      
+      if( i > -1)
+      {
+         tempName = name.substr(0,i);
+         name = name.substr(i+1, name.length() - 1);
+      }
+      
+      
+      if(symbolTable.find(tempName) != symbolTable.end())
       { processError("multiple name definition"); }
+      else if(isKeyword(tempName))
+      { processError("illegal use of keyword");}
+      else if(symbolTable.size() > 256)
+      { processError("symbolTable is over maximum size");}
+      else
+      {
+         if(isupper(tempName[0]))
+         {
+            SymbolTableEntry s(tempName, inType, inMode, inValue, inAlloc, inUnits);
+            symbolTable.emplace(tempName,s);
+         }
+         else
+         {
+            SymbolTableEntry x(genInternalName(inType), inType, inMode, inValue, inAlloc, inUnits);
+            symbolTable.emplace(tempName,x);
+         }
+         
+      }
       
    }
 }
