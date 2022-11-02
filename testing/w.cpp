@@ -30,21 +30,20 @@ void Compiler::createListingHeader()
 
 void Compiler::parser()
 {
-   int i = 5;
    
-   string s[6] = {"aab", "1aaab1234", " b", "aa__b", "a_b", "as_1"};
+   nextChar();
    
-   while (i >= 0)
+   while (ch != END_OF_FILE)
    {
-      
-      
+     nextToken();
+	 
+	 //cout << endl << token;
+    //if(token == 'var')
+    cout << token <<  " ";
+    if(isNonKeyId(token))   
+      cout << endl << ids() << endl << endl;
+    //cout << "Next?" << endl;  
      
-	  if(isNonKeyId(s[i]))
-     {cout <<endl << s[i] << " true" << endl;}
-     else
-     {cout <<endl << s[i] << " false" << endl;}
-   
-      i--;
    }
 }
 
@@ -92,7 +91,10 @@ void Compiler::varStmts()       // stage 0, production 7
 string Compiler::ids()          // stage 0, production 8
 {
     string temp, tempString;
-    
+	
+	static int depth = 0;
+	//cout  << '|' << depth << '|' << token << "|";
+    depth++;
     if(!isNonKeyId(token))
     {
        processError("non-keyword identifier expected");
@@ -101,8 +103,10 @@ string Compiler::ids()          // stage 0, production 8
     tempString = token;
     temp = token;
     
+   
     if( nextToken() == ",")
     {
+       
        if(!isNonKeyId(nextToken()))
        {
           processError("non-keyword identifier expected");
@@ -138,15 +142,16 @@ bool Compiler::isSpecialSymbol(char c) const // determines if c is a special sym
 /*DONE AND TESTED*/
 bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id
 {
-   
+   //cout << "|hi|";
 	if(!islower(s[0]) ){
+      //cout << "F";
 		return false;
 	}
    else if(!islower(s[s.length() - 1]) && !isdigit(s[s.length() - 1]))
    {
       return false;
    }
-   
+	//cout << "{str length: " << s.length() << " }";
 	for(uint i = 1; i < s.length() - 2; i++){
 		if (s[i] == '_'){
 			if(s[i+1] == '_'){
@@ -340,7 +345,7 @@ string Compiler::genInternalName(storeTypes stype) const
 }
 void Compiler::processError(string err)
 {
-    Error: Line 7: ":" expected
+    //Error: Line 7: ":" expected
     listingFile << "Error: Line " << lineNo << ": " << err << "/n";
     exit(EXIT_FAILURE);
 }
