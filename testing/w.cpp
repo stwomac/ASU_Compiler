@@ -30,7 +30,7 @@ void Compiler::createListingHeader()
 
 void Compiler::parser()
 {
-   
+   /* IDS testing
    nextChar();
    
    while (ch != END_OF_FILE)
@@ -40,11 +40,14 @@ void Compiler::parser()
 	 //cout << endl << token;
     //if(token == 'var')
     cout << token <<  " ";
+    if(token == "var")
+    {continue;}
     if(isNonKeyId(token))   
       cout << endl << ids() << endl << endl;
     //cout << "Next?" << endl;  
      
    }
+   */
 }
 
 void Compiler::createListingTrailer()
