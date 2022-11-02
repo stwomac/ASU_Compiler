@@ -254,6 +254,7 @@ bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id			/
 
 bool Compiler::isInteger(string s) const  // determines if s is an integer				//DONE
 {
+
 	for(uint i = 0; i < s.length(); i++){
 		if (!isdigit(s[i]))
 			return false
@@ -337,18 +338,18 @@ string Compiler::whichValue(string name) // tells which value a name has
    return value
 }
 
-void Compiler::code(string op, string operand1 , string operand2 )
+void Compiler::code(string op, string operand1 , string operand2 ) //DONE?
 {
    if (op == "program")
       emitPrologue(operand1)
    else if (op == "end")
       emitEpilogue()
    else
-      processError(compiler error since function code should not be called with illegal arguments)
+      processError("compiler error since function code should not be called with illegal arguments")
 }
 
 // Emit Functions
-void Compiler::emit(string label , string instruction , string operands , string comment )
+void Compiler::emit(string label , string instruction , string operands , string comment ) //DONE?
 {
    objectFile << left;
    objectFile << setw(8) << label;
@@ -364,32 +365,55 @@ void Compiler::emit(string label , string instruction , string operands , string
    */
 }
 
-void Compiler::emitPrologue(string progName, string s)
+void Compiler::emitPrologue(string progName, string s) // uhhh done?
 {
+   /*
    Output identifying comments at beginning of objectFile
    Output the %INCLUDE directives
+   */
+   emit("JohnPaul Flores")
+   emit("Steven Womack")
+   emit("Stage0")
+   emit("%INCLUDE", " \"Along32.inc\"")
+   emit("%INCLUDE", " \"Macros_Along.inc\"")
    emit("SECTION", ".text")
    emit("global", "_start", "", "; program" + progName)
    emit("_start:")
 }
 
-void Compiler::emitEpilogue(string a, string b)
+void Compiler::emitEpilogue(string a, string b) //why arent the parameters used?
 {
    emit("","Exit", "{0}");
    emitStorage();
 }
 
-void Compiler::emitStorage()
+void Compiler::emitStorage()  //done?
 {
+   //showing structure of symbolTable. basically a dictionary of lists
+   //map<string, SymbolTableEntry> symbolTable;
+   //StmbolTableEntry[InternalName, dataType, Mode, Value, Allocation, Unit]
+   
+   //emmiting the .data section
    emit("SECTION", ".data")
-   for those entries in the symbolTable that have an allocation of YES and a storage mode of CONSTANT
+   
+   //for those entries in the symbolTable that have an allocation of YES and a storage mode of CONSTANT
+   for(auto const& x : symbolTable) 
    { 
-      call emit to output a line to objectFile 
+      //see sample output - basically printing the int name, then dataType, etc
+      if(x.second.getAlloc() == YES && x.second.getMode() == CONSTANT){
+         emit(x.second.getInternalName(), x.second.getDataType(), x.second.getValue(),) //the line?
    }
+   
+   //emitting the .bss section
    emit("SECTION", ".bss")
-   for those entries in the symbolTable that have an allocation of YES and a storage mode of VARIABLE
+   
+   //for those entries in the symbolTable that have an allocation of YES and a storage mode of VARIABLE
+   for(auto const& x : symbolTable) 
    { 
-      call emit to output a line to objectFile
+      //see sample output - basically printing the int name, then dataType, etc
+      if(x.second.getAlloc() == YES && x.second.getMode() == VARIABLE){
+         emit(x.second.getInternalName(), x.second.getDataType(), x.second.getUnits(),) //the line?
+      }
    }
 }
 
