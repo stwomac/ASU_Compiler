@@ -32,7 +32,8 @@ Compiler::~Compiler()           // destructor                                   
 
 void Compiler::createListingHeader()                                             //DONE
 {
-   cout << "STAGE0:" << "JohnPaul Flores, Steven Womack" << ctime << endl;
+   time_t now = time (NULL);
+   cout << "STAGE0:" << "JohnPaul Flores, Steven Womack" << ctime(&now) << endl;
    print "LINE " << lineNo << ":" << "SOURCE STATEMENT" << endl;
    //line numbers and source statements should be aligned under the headings 
 }
@@ -355,7 +356,7 @@ void Compiler::emit(string label , string instruction , string operands , string
    objectFile << setw(8) << label;
    objectFile << setw(8) << instruction;
    objectFile << setw(24) << operands;
-   objectFile << comment;
+   objectFile << comment << endl;
    /*
    Turn on left justification in objectFile
    Output label in a field of width 8
@@ -365,29 +366,35 @@ void Compiler::emit(string label , string instruction , string operands , string
    */
 }
 
-void Compiler::emitPrologue(string progName, string s) // uhhh done?
+void Compiler::emitPrologue(string progName, string s) // uhhh done? I would really look into this one
 {
    /*
    Output identifying comments at beginning of objectFile
    Output the %INCLUDE directives
    */
-   emit("JohnPaul Flores")
-   emit("Steven Womack")
-   emit("Stage0")
-   emit("%INCLUDE", " \"Along32.inc\"")
-   emit("%INCLUDE", " \"Macros_Along.inc\"")
+   //time and nams
+   time_t now = time (NULL)
+   objectFile << "; " << setw(35) << "JohnPaul Flores & Steven Womack " << ctime(&now);
+   
+   //includes
+   objectFile << "%INCLUDE " << "\"Along32.inc\"" << endl;
+   objectFile << "%INCLUDE " << "\"Macros_Along.inc\"" << endl;
+   
    emit("SECTION", ".text")
+   //may run into program name length errors?
    emit("global", "_start", "", "; program" + progName)
+   objectFile << "\n";
    emit("_start:")
 }
 
 void Compiler::emitEpilogue(string a, string b) //why arent the parameters used?
 {
    emit("","Exit", "{0}");
+   objectFile << "\n";
    emitStorage();
 }
 
-void Compiler::emitStorage()  //done?
+void Compiler::emitStorage()  //first stable version
 {
    //showing structure of symbolTable. basically a dictionary of lists
    //map<string, SymbolTableEntry> symbolTable;
@@ -400,20 +407,26 @@ void Compiler::emitStorage()  //done?
    //for those entries in the symbolTable that have an allocation of YES and a storage mode of CONSTANT
    for(auto const& x : symbolTable) 
    { 
+      string comment = "; "
+      comment += x.first;
       //see sample output - basically printing the int name, then dataType, etc
       if(x.second.getAlloc() == YES && x.second.getMode() == CONSTANT){
-         emit(x.second.getInternalName(), x.second.getDataType(), x.second.getValue(),) //the line?
+         //may need to look at booleans
+         emit(x.second.getInternalName(), x.second.getDataType(), to_string(x.second.getValue()), comment) //the line?
    }
    
-   //emitting the .bss section
+   //emitting the .bss section on a newline
+   objectFile << "\n";
    emit("SECTION", ".bss")
    
    //for those entries in the symbolTable that have an allocation of YES and a storage mode of VARIABLE
    for(auto const& x : symbolTable) 
    { 
+      string comment = "; "
+      comment += x.first;
       //see sample output - basically printing the int name, then dataType, etc
       if(x.second.getAlloc() == YES && x.second.getMode() == VARIABLE){
-         emit(x.second.getInternalName(), x.second.getDataType(), x.second.getUnits(),) //the line?
+         emit(x.second.getInternalName(), x.second.getDataType(), to_string(x.second.getUnits()), comment) //the line?
       }
    }
 }
