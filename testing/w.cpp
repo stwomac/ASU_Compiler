@@ -114,9 +114,64 @@ void Compiler::beginEndStmt()   // stage 0, production 5
     
 }
 
+/*FINISH ALL IS STATEMENTS BEFORE MOVING UP*/
 void Compiler::constStmts()     // stage 0, production 6
 {
+    string x,y;
     
+    if(!isNonKeyId(token))
+       processError("non-keyword identifier expected");
+    
+    x = token;
+    
+    if (nextToken() != "=")
+       processError("\"=\" expected");
+   
+    y = nextToken();
+    
+    if ( y != "+"       &&
+         y != "-"       &&
+         y != "not"     &&
+         !isNonKeyId(y) &&
+         y != "true"    &&
+         y != "false"   &&
+         !isInteger(y)  ) //please look at to see if you need " || " 's // I honestly believe you do
+    {processError("token to right of \"=\" illegal");}
+    
+    if (y == "+" || y == "-") 
+    {
+       if (!isInteger(nextToken())) 
+          processError("integer expected after sign");
+       
+       y = y + token;
+    }
+    
+    if (y == "not")
+    {
+       if (!isBoolean(nextToken()))
+          processError("boolean expected after \"not\"");
+       
+       if (token == "true");
+          y = "false"
+       else
+          y = "true";
+    }
+    
+    if (nextToken() != ";")
+       processError("semicolon expected")
+    
+    if (!isInteger(y) && !isBoolean(y))
+       processError("data type of token on the right-hand side must be INTEGER or BOOLEAN");
+    
+    insert(x,whichType(y),CONSTANT,whichValue(y),YES,1) //review
+    
+    x = nextToken();
+    
+    if ( x != "begin" && x != "var" && !isNonKeyId(x))
+       processError("non-keyword identifier, \"begin\", or \"var\" expected");
+    
+    if (isNonKeyId(x))
+       constStmts();
 }
 
 void Compiler::varStmts()       // stage 0, production 7
@@ -155,6 +210,7 @@ string Compiler::ids()          // stage 0, production 8
     return tempString;
 }
 
+/*DONE*/
 // Helper functions for the Pascallite lexicon
 bool Compiler::isKeyword(string s) const  // determines if s is a keyword
 {
