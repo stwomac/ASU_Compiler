@@ -25,7 +25,9 @@ Compiler::~Compiler()           // destructor
 
 void Compiler::createListingHeader()
 {
-    
+    listingFile << "STAGE0:" << "JohnPaul Flores, Steven Womack" << "001" << endl;
+    listingFile << "LINE " << lineNo << ":" << "SOURCE STATEMENT" << endl;
+   //line numbers and source statements should be aligned under the headings 
 }
 
 void Compiler::parser()
@@ -53,8 +55,9 @@ void Compiler::parser()
    
    
    //insert testing
+   
     map<string, SymbolTableEntry>::iterator i;
-   insert("WORDS",INTEGER,VARIABLE,"",YES,1);
+   insert("WORDS,what,why,WHO",INTEGER,VARIABLE,"",YES,1);
    insert("ababa",INTEGER,VARIABLE,"",YES,1);
    insert("huh",INTEGER,VARIABLE,"",YES,1);
    insert("Wha",INTEGER,VARIABLE,"",YES,1);
@@ -73,6 +76,11 @@ void Compiler::parser()
    {
       cout << i->second.getInternalName() << endl;
    }
+   
+   //error testing;
+   /*
+   processError("WHAT");
+   */
 }
 
 void Compiler::createListingTrailer()
@@ -218,31 +226,10 @@ bool Compiler::isLiteral(string s) const  // determines if s is a literal
     return true;
 }
 
+/*DONE AND TESTED*/
 // Action routines
 void Compiler::insert(string externalName, storeTypes inType, modes inMode, string inValue, allocation inAlloc, int inUnits)
 {
-   /*
-    
-   //create symbol table entry for each identifier in list of external names
-   //Multiply inserted names are illegal
-   {
-   string name ( name == external name)
-   while (name broken from list of external names and put into name != "")
-   {
-      if (symbolTable[name] is defined)
-         processError(multiple name definition)
-      else if (name is a keyword)
-         processError(illegal use of keyword)
-      else //create table entry
-      {
-      if (name begins with uppercase)
-         symbolTable[name]=(name,inType,inMode,inValue,inAlloc,inUnits)
-      else
-         symbolTable[name]=(genInternalName(inType),inType,inMode,inValue,
-      inAlloc,inUnits)
-      }
-   }   */
-   
    
    string name = externalName;
    
@@ -454,9 +441,19 @@ string Compiler::genInternalName(storeTypes stype) const
     
     return ret;
 }
+
+/*DONE AND TESTED*/
 void Compiler::processError(string err)
 {
+   cout << "what?" << endl;
     //Error: Line 7: ":" expected
-    listingFile << "Error: Line " << lineNo << ": " << err << "/n";
-    exit(0);
+    listingFile << "Error: Line " << lineNo << ": " << err << "\n";
+    
+    sourceFile.close();
+    listingFile.close();
+    objectFile.close();
+    
+    
+    //cout << " near the end";
+    exit(EXIT_FAILURE);
 }
