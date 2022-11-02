@@ -392,6 +392,7 @@ void Compiler::emitStorage()  //done?
    //showing structure of symbolTable. basically a dictionary of lists
    //map<string, SymbolTableEntry> symbolTable;
    //StmbolTableEntry[InternalName, dataType, Mode, Value, Allocation, Unit]
+   //[externalName, [InternalName, dataType, Mode, Value, Allocation, Unit]
    
    //emmiting the .data section
    emit("SECTION", ".data")
