@@ -91,6 +91,7 @@ void Compiler::varStmts()       // stage 0, production 7
     
 }
 
+/*DONE AND TESTED*/
 string Compiler::ids()          // stage 0, production 8
 {
     string temp, tempString;
@@ -183,7 +184,37 @@ bool Compiler::isLiteral(string s) const  // determines if s is a literal
 // Action routines
 void Compiler::insert(string externalName, storeTypes inType, modes inMode, string inValue, allocation inAlloc, int inUnits)
 {
-        
+   /*
+    
+   //create symbol table entry for each identifier in list of external names
+   //Multiply inserted names are illegal
+   {
+   string name ( name == external name)
+   while (name broken from list of external names and put into name != "")
+   {
+      if (symbolTable[name] is defined)
+         processError(multiple name definition)
+      else if (name is a keyword)
+         processError(illegal use of keyword)
+      else //create table entry
+      {
+      if (name begins with uppercase)
+         symbolTable[name]=(name,inType,inMode,inValue,inAlloc,inUnits)
+      else
+         symbolTable[name]=(genInternalName(inType),inType,inMode,inValue,
+      inAlloc,inUnits)
+      }
+   }   */
+   
+   
+   string name = externalName;
+   
+   while(name != "")
+   {
+      if(symbolTable.find(name) != symbolTable.end())
+      { processError("multiple name definition"); }
+      
+   }
 }
 
 storeTypes Compiler::whichType(string name) // tells which data type a name has
@@ -350,5 +381,5 @@ void Compiler::processError(string err)
 {
     //Error: Line 7: ":" expected
     listingFile << "Error: Line " << lineNo << ": " << err << "/n";
-    exit(EXIT_FAILURE);
+    exit(0);
 }
