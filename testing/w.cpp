@@ -32,6 +32,9 @@ void Compiler::createListingHeader()
 
 void Compiler::parser()
 {
+   
+   //objectFile << "words";
+   //objectFile.close();
    /* IDS testing
    nextChar();
    
@@ -122,7 +125,6 @@ void Compiler::parser()
    if(nextToken() != "program")
       processError("keyword \"program\" expected");
    
-   //cout << token << endl;
    prog();
 }
 
@@ -146,7 +148,7 @@ void Compiler::prog()           // stage 0, production 1
     
     if (token == "var")
        vars();
-    /*
+    
     if (token != "begin")
        processError("keyword \"begin\" expected");
     
@@ -154,9 +156,7 @@ void Compiler::prog()           // stage 0, production 1
    
     if (token != "$")
        processError("no text may follow \"end\"");
-    */
     
-    processError("completed var");
 }
 
 void Compiler::progStmt()       // stage 0, production 2
@@ -209,7 +209,18 @@ void Compiler::vars()           // stage 0, production 4
 
 void Compiler::beginEndStmt()   // stage 0, production 5
 {
+    if (token != "begin")
+       processError("keyword \"begin\" expected");
     
+    if (nextToken() != "end")
+       processError("keyword \"end\" expected");
+    
+    if (nextToken() != ".")
+       processError("period expected");
+    
+    nextToken();
+    cout << " begin code end" << endl;
+    code("end", ".");
 }
 
 /*DONE BUT UNTESTED*/
@@ -264,7 +275,8 @@ void Compiler::constStmts()     // stage 0, production 6
     {
        //cout  << y << endl;
        processError("data type of token on the right-hand side must be INTEGER or BOOLEAN, womack");
-    }    
+    }
+    cout << x << " " << whichType(y) << endl;;
     insert(x,whichType(y),CONSTANT,whichValue(y),YES,1); 
     
     x = nextToken();
@@ -293,15 +305,27 @@ void Compiler::varStmts()       // stage 0, production 7
    
     token = nextToken();
      
-    if (whichType(token) != INTEGER && whichType(token) != BOOLEAN)
-       processError("illegal type follows \":\"");
+       
     
     y = token;
+    storeTypes dataY;
+    if(y == "integer")
+    {
+       dataY = INTEGER;
+    }
+    else if(y == "boolean")
+    {
+       dataY = BOOLEAN;
+    }
+    else
+    {
+       processError("illegal type follows \":\"");
+    }
     
     if (nextToken() != ";")
        processError("semicolon expected");
     
-    insert(x,whichType(y),VARIABLE,"",YES,1);
+    insert(x,dataY,VARIABLE,"",YES,1);
     
     token = nextToken();																	
     //can not really do nextToken() multiple times in one if, basically look at the same nextToken
@@ -513,18 +537,11 @@ void Compiler::insert(string externalName, storeTypes inType, modes inMode, stri
 /*DONE AND TESTED*/
 storeTypes Compiler::whichType(string name) // tells which data type a name has
 {
-    
     storeTypes dataType;
-    
-    if( name == "integer")
-       return INTEGER;
-    
-    if (name == "boolean")
-       return BOOLEAN;
     
     if(isLiteral(name))
     {
-        if(name.find("true") >= 0 || name.find("false") >= 0)
+        if(name == "true" || name == "false")
         {
             dataType = BOOLEAN;
         }
@@ -582,10 +599,17 @@ string Compiler::whichValue(string name) // tells which value a name has
 
 void Compiler::code(string op, string operand1 , string operand2 )
 {
+   
     if (op == "program")
+    {
        emitPrologue(operand1);
+    }
     else if (op == "end")
+    {
+       cout << " made it to emit \n";
        emitEpilogue();
+       
+    }
     else
        processError("compiler error since function code should not be called with illegal arguments");
 }
@@ -593,39 +617,78 @@ void Compiler::code(string op, string operand1 , string operand2 )
 // Emit Functions
 void Compiler::emit(string label , string instruction , string operands , string comment )
 {
+   if(instruction == "Exit")
+      cout << "made it to internal emit \n";
     objectFile << left;
-    objectFile << setw(8) << label;
-    objectFile << setw(8) << instruction;
-    objectFile << setw(24) << operands;
-    objectFile << comment << endl;
+   objectFile << setw(8) << label;
+   objectFile << setw(8) << instruction;
+   objectFile << setw(24) << operands;
+   objectFile << comment << endl;
 }
 
 void Compiler::emitPrologue(string progName, string s)
 {
     time_t now = time (NULL);
-    objectFile << "; " << left << setw(35) << "JohnPaul Flores & Steven Womack " << right << ctime(&now);
+   objectFile << "; " << setw(35) << left << "JohnPaul Flores & Steven Womack " << right << ctime(&now);
    
    //includes
-    objectFile << "%INCLUDE " << "\"Along32.inc\"" << endl;
-    objectFile << "%INCLUDE " << "\"Macros_Along.inc\"" << endl;
+   objectFile << "%INCLUDE " << "\"Along32.inc\"" << endl;
+   objectFile << "%INCLUDE " << "\"Macros_Along.inc\"" << endl;
    
-    emit("SECTION", ".text");
+   emit("SECTION", ".text");
    //may run into program name length errors?
-    emit("global", "_start", "", "; program " + progName);
-    objectFile << "\n";
-    emit("_start:");
+   emit("global", "_start", "", "; program " + progName);
+   objectFile << "\n";
+   emit("_start:");
 }
 
 void Compiler::emitEpilogue(string a, string b)
 {
-    emit("","Exit", "{0}");
-    objectFile << "\n";
-    emitStorage();
+   emit("","Exit", "{0}");
+   objectFile << "\n";
+   emitStorage();
 }
 
 void Compiler::emitStorage()
 {
-    
+    //showing structure of symbolTable. basically a dictionary of lists
+   //map<string, SymbolTableEntry> symbolTable;
+   //StmbolTableEntry[InternalName, dataType, Mode, Value, Allocation, Unit]
+   //[externalName, [InternalName, dataType, Mode, Value, Allocation, Unit]
+   
+   //emmiting the .data section
+   
+   
+   emit("SECTION", ".data");
+   
+   //for those entries in the symbolTable that have an allocation of YES and a storage mode of CONSTANT
+   for(auto const& x : symbolTable) 
+   { 
+      string comment = "; ";
+      comment += x.first;
+      //see sample output - basically printing the int name, then dataType, etc
+      if(x.second.getAlloc() == YES && x.second.getMode() == CONSTANT){
+         //may need to look at booleans
+         emit(x.second.getInternalName(), to_string(x.second.getDataType()), x.second.getValue(), comment); //the line?
+	  }
+   }
+   
+   //emitting the .bss section on a newline
+   objectFile << "\n";
+   emit("SECTION", ".bss");
+   
+   //for those entries in the symbolTable that have an allocation of YES and a storage mode of VARIABLE
+   for(auto const& x : symbolTable) 
+   { 
+      string comment = "; ";
+      comment += x.first;
+      //see sample output - basically printing the int name, then dataType, etc
+      if(x.second.getAlloc() == YES && x.second.getMode() == VARIABLE){
+         emit(x.second.getInternalName(), to_string(x.second.getDataType()), to_string(x.second.getUnits()), comment); //the line?
+      }
+   }
+   
+   
 }
 
 /*DONE AND TESTED*/
