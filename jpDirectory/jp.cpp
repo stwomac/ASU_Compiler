@@ -402,7 +402,7 @@ void Compiler::emitStorage()  //first stable version
    //[externalName, [InternalName, dataType, Mode, Value, Allocation, Unit]
    
    //emmiting the .data section
-   emit("SECTION", ".data")
+   emit("SECTION", ".data");
    
    //for those entries in the symbolTable that have an allocation of YES and a storage mode of CONSTANT
    for(auto const& x : symbolTable) 
@@ -413,6 +413,7 @@ void Compiler::emitStorage()  //first stable version
       if(x.second.getAlloc() == YES && x.second.getMode() == CONSTANT){
          //may need to look at booleans
          emit(x.second.getInternalName(), x.second.getDataType(), to_string(x.second.getValue()), comment) //the line?
+	  }
    }
    
    //emitting the .bss section on a newline

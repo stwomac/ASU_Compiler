@@ -48,15 +48,12 @@ void Compiler::parser()
      
    }
    */
-   string arr[] = {"True", "True", "False", "hello"};
-   cout << "in Parser\n";
-   for (int i=0; i < 4; i++){
-      
-      if (isBoolean(arr[i]))
-         cout << arr[i] << "isBoolean = True\n";
-      else
-         cout << arr[i] << "isBoolean = False\n";
-   }
+   emitPrologue("program.asm", "string?");
+   
+   
+   sourceFile.close();
+   listingFile.close();
+   objectFile.close();
 }
 
 void Compiler::createListingTrailer()
@@ -210,24 +207,86 @@ void Compiler::code(string op, string operand1 , string operand2 )
 }
 
 // Emit Functions
-void Compiler::emit(string label , string instruction , string operands , string comment )
+void Compiler::emit(string label , string instruction , string operands , string comment ) //DONE?
 {
-    
+   objectFile << left;
+   objectFile << setw(8) << label;
+   objectFile << setw(8) << instruction;
+   objectFile << setw(24) << operands;
+   objectFile << comment << endl;
+   /*
+   Turn on left justification in objectFile
+   Output label in a field of width 8
+   Output instruction in a field of width 8
+   Output the operands in a field of width 24
+   Output the comment
+   */
 }
 
-void Compiler::emitPrologue(string progName, string s)
+void Compiler::emitPrologue(string progName, string s) // uhhh done? I would really look into this one
 {
-    
+   /*
+   Output identifying comments at beginning of objectFile
+   Output the %INCLUDE directives
+   */
+   //time and nams
+   time_t now = time (NULL);
+   objectFile << "; " << setw(35) << "JohnPaul Flores & Steven Womack " << ctime(&now);
+   
+   //includes
+   objectFile << "%INCLUDE " << "\"Along32.inc\"" << endl;
+   objectFile << "%INCLUDE " << "\"Macros_Along.inc\"" << endl;
+   
+   emit("SECTION", ".text");
+   //may run into program name length errors?
+   emit("global", "_start", "", "; program" + progName);
+   objectFile << "\n";
+   emit("_start:");
 }
 
-void Compiler::emitEpilogue(string a, string b)
+void Compiler::emitEpilogue(string a, string b) //why arent the parameters used?
 {
-    
+   emit("","Exit", "{0}");
+   objectFile << "\n";
+   emitStorage();
 }
 
-void Compiler::emitStorage()
+void Compiler::emitStorage()  //first stable version
 {
-    
+   //showing structure of symbolTable. basically a dictionary of lists
+   //map<string, SymbolTableEntry> symbolTable;
+   //StmbolTableEntry[InternalName, dataType, Mode, Value, Allocation, Unit]
+   //[externalName, [InternalName, dataType, Mode, Value, Allocation, Unit]
+   
+   //emmiting the .data section
+   emit("SECTION", ".data");
+   
+   //for those entries in the symbolTable that have an allocation of YES and a storage mode of CONSTANT
+   for(auto const& x : symbolTable) 
+   { 
+      string comment = "; ";
+      comment += x.first;
+      //see sample output - basically printing the int name, then dataType, etc
+      if(x.second.getAlloc() == YES && x.second.getMode() == CONSTANT){
+         //may need to look at booleans
+         emit(x.second.getInternalName(), x.second.getDataType(), to_string(x.second.getValue()), comment) //the line?
+	  }
+   }
+   
+   //emitting the .bss section on a newline
+   objectFile << "\n";
+   emit("SECTION", ".bss");
+   
+   //for those entries in the symbolTable that have an allocation of YES and a storage mode of VARIABLE
+   for(auto const& x : symbolTable) 
+   { 
+      string comment = "; "
+      comment += x.first;
+      //see sample output - basically printing the int name, then dataType, etc
+      if(x.second.getAlloc() == YES && x.second.getMode() == VARIABLE){
+         emit(x.second.getInternalName(), x.second.getDataType(), to_string(x.second.getUnits()), comment) //the line?
+      }
+   }
 }
 
 /*DONE AND TESTED*/
