@@ -219,7 +219,7 @@ void Compiler::beginEndStmt()   // stage 0, production 5
        processError("period expected");
     
     nextToken();
-    cout << " begin code end" << endl;
+    //cout << " begin code end" << endl;
     code("end", ".");
 }
 
@@ -257,7 +257,17 @@ void Compiler::constStmts()     // stage 0, production 6
     
     if (y == "not")
     {
-       if (!isBoolean(nextToken()))
+       //cout << endl << token;
+       token = nextToken();
+       
+       //cout << " " << token;
+       if(symbolTable.find(token) != symbolTable.end())
+       {
+          token = symbolTable.at(token).getValue();
+       }
+       //cout << " " << token << endl;
+       
+       if (!isBoolean(token))
        {processError("boolean expected after \"not\"");}
        
        if (token == "true")
@@ -276,7 +286,7 @@ void Compiler::constStmts()     // stage 0, production 6
        //cout  << y << endl;
        processError("data type of token on the right-hand side must be INTEGER or BOOLEAN, womack");
     }
-    cout << x << " " << whichType(y) << endl;;
+    //cout << x << " " << whichType(y) << endl;;
     insert(x,whichType(y),CONSTANT,whichValue(y),YES,1); 
     
     x = nextToken();
@@ -558,7 +568,7 @@ storeTypes Compiler::whichType(string name) // tells which data type a name has
         }
 		else
 		{
-         cout << endl << name  << endl;
+         //cout << endl << name  << endl;
 			processError("reference to undefined constant");
 		}
     }
@@ -606,7 +616,7 @@ void Compiler::code(string op, string operand1 , string operand2 )
     }
     else if (op == "end")
     {
-       cout << " made it to emit \n";
+       //cout << " made it to emit \n";
        emitEpilogue();
        
     }
@@ -618,7 +628,7 @@ void Compiler::code(string op, string operand1 , string operand2 )
 void Compiler::emit(string label , string instruction , string operands , string comment )
 {
    if(instruction == "Exit")
-      cout << "made it to internal emit \n";
+      //cout << "made it to internal emit \n";
     objectFile << left;
    objectFile << setw(8) << label;
    objectFile << setw(8) << instruction;
