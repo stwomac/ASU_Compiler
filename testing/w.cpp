@@ -59,12 +59,15 @@ void Compiler::parser()
     map<string, SymbolTableEntry>::iterator i;
    insert("WORDS,what,why,WHO",INTEGER,VARIABLE,"",YES,1);
    insert("ababa",INTEGER,VARIABLE,"",YES,1);
-   insert("huh",INTEGER,VARIABLE,"",YES,1);
+   insert("huh",BOOLEAN,VARIABLE,"",YES,1);
    insert("Wha",INTEGER,VARIABLE,"",YES,1);
    insert("yyyyY",INTEGER,VARIABLE,"",YES,1);
    
+   storeTypes thing = symbolTable.at("huh").getDataType();
    
+   cout << thing << " ";
    
+   /*
    for(i= symbolTable.begin(); i != symbolTable.end(); i++)
    {
       cout << i->second.getInternalName() << endl;
@@ -76,11 +79,45 @@ void Compiler::parser()
    {
       cout << i->second.getInternalName() << endl;
    }
-   
+   */
    //error testing;
    /*
    processError("WHAT");
    */
+   
+   //isLiteral testing
+   /*
+   string s = "12547+32893";
+   
+   
+   
+   if(isLiteral("12547+32893"))
+       cout << "t" << endl;
+   else
+       cout << "f" << endl;
+   
+   if(isLiteral("no"))
+       cout << "t" << endl;
+   else
+       cout << "f" << endl;
+   
+   if(isLiteral("not false"))
+       cout << "t" << endl;
+   else
+       cout << "f" << endl;
+   
+   if(isLiteral("_4383832"))
+       cout << "t" << endl;
+   else
+       cout << "f" << endl;
+   
+   if(isLiteral("383 82"))
+       cout << "t" << endl;
+   else
+       cout << "f" << endl;
+   */
+   
+   
 }
 
 void Compiler::createListingTrailer()
@@ -135,7 +172,7 @@ void Compiler::constStmts()     // stage 0, production 6
          !isNonKeyId(y) &&
          y != "true"    &&
          y != "false"   &&
-         !isInteger(y)  ) //please look at to see if you need " || " 's // I honestly believe you do
+         !isInteger(y)  ) 
     {processError("token to right of \"=\" illegal");}
     
     if (y == "+" || y == "-") 
@@ -149,21 +186,21 @@ void Compiler::constStmts()     // stage 0, production 6
     if (y == "not")
     {
        if (!isBoolean(nextToken()))
-          processError("boolean expected after \"not\"");
+       {processError("boolean expected after \"not\"");}
        
-       if (token == "true");
-          y = "false"
+       if (token == "true")
+          y = "false";
        else
           y = "true";
     }
     
     if (nextToken() != ";")
-       processError("semicolon expected")
+       processError("semicolon expected");
     
     if (!isInteger(y) && !isBoolean(y))
        processError("data type of token on the right-hand side must be INTEGER or BOOLEAN");
     
-    insert(x,whichType(y),CONSTANT,whichValue(y),YES,1) //review
+    insert(x,whichType(y),CONSTANT,whichValue(y),YES,1); 
     
     x = nextToken();
     
@@ -269,17 +306,48 @@ bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id
 
 bool Compiler::isInteger(string s) const  // determines if s is an integer
 {
+    for(uint i = 0; i < s.length(); i++){
+		if (!isdigit(s[i]))
+			return false;
+		
+	}
     return true;
 }
 
 bool Compiler::isBoolean(string s) const  // determines if s is a boolean
 {
-    return true;
+    if (s == "true" || s == "false")
+		return true;
+	else
+		return false;
 }
 
+/*DONE AND TESTED*/
 bool Compiler::isLiteral(string s) const  // determines if s is a literal
 {
-    return true;
+    // if s[0] == + or -, check +[possibilities] to be integer
+	if(s[0] == '+' || s[0] == '-')
+    {			
+        
+		if(isInteger(s.substr(1, s.length() - 1)))
+        {return true;}
+    
+    }
+	
+	// if straight bool or int then your fine
+	if(isBoolean(s) || isInteger(s))
+    {
+        cout << " in here ";
+		return true;
+	}
+	// if it starts with not, the rest should be a bool
+	if(s.substr(0, 3) == "not"){
+		if(isBoolean(s.substr(4, s.length() - 4)))
+        {return true;}
+        
+    }
+    
+    return false;
 }
 
 /*DONE AND TESTED*/
@@ -339,11 +407,60 @@ void Compiler::insert(string externalName, storeTypes inType, modes inMode, stri
 
 storeTypes Compiler::whichType(string name) // tells which data type a name has
 {
-    return INTEGER;
+    
+    storeTypes dataType;
+    
+    if(isLiteral(name))
+    {
+        if(name.find("true") >= 0 || name.find("false") >= 0)
+        {
+            dataType = BOOLEAN;
+        }
+        else
+        {
+            dataType = INTEGER;
+        }
+    }
+    else
+    {
+        if(symbolTable.find(name) != symbolTable.end())
+        {
+            dataType = symbolTable.at(name).getDataType();
+        }
+		else
+		{
+			processError("reference to undefined constant");
+		}
+    }
+	
+	return dataType;
+    
+    //return INTEGER;
 }
 string Compiler::whichValue(string name) // tells which value a name has
 {
-    return "";
+    string value = "value never set";
+	
+	 if(isLiteral(name))
+	 {value = name;}
+	 else
+    {
+       if(symbolTable.find(name) != symbolTable.end() )
+       {
+          try
+          {
+             value = symbolTable.at(name).getValue();
+          } catch (...) {
+             processError("reference to undefined constant");
+          }
+       }
+       else
+       {
+          processError("reference to undefined constant");
+       }
+    }
+    
+    return value;
 }
 
 void Compiler::code(string op, string operand1 , string operand2 )
