@@ -143,10 +143,10 @@ void Compiler::prog()           // stage 0, production 1
     
     if (token == "const")
        consts();
-    /*
+    
     if (token == "var")
        vars();
-    
+    /*
     if (token != "begin")
        processError("keyword \"begin\" expected");
     
@@ -156,7 +156,7 @@ void Compiler::prog()           // stage 0, production 1
        processError("no text may follow \"end\"");
     */
     
-    processError("completed const");
+    processError("completed var");
 }
 
 void Compiler::progStmt()       // stage 0, production 2
@@ -198,7 +198,13 @@ void Compiler::consts()         // stage 0, production 3
 
 void Compiler::vars()           // stage 0, production 4
 {
+    if (token != "var")
+       processError("keyword \"var\" expected");
     
+    if (!isNonKeyId(nextToken())) //psuedo is !isNonKeyId(nextToken())
+       processError("non-keyword identifier must follow \"var\"");
+    
+    varStmts();
 }
 
 void Compiler::beginEndStmt()   // stage 0, production 5
@@ -268,14 +274,45 @@ void Compiler::constStmts()     // stage 0, production 6
     
     if (isNonKeyId(x))
     {
-       cout << x << " ";
+       //cout << x << " ";
        constStmts();
     }
 }
 
 void Compiler::varStmts()       // stage 0, production 7
 {
+    string x,y;
     
+    if (!isNonKeyId(token)) //fix
+       processError("non-keyword identifier expected");
+   
+    x = ids();
+   
+    if (token != ":")
+       processError("\":\" expected");
+   
+    token = nextToken();
+     
+    if (whichType(token) != INTEGER && whichType(token) != BOOLEAN)
+       processError("illegal type follows \":\"");
+    
+    y = token;
+    
+    if (nextToken() != ";")
+       processError("semicolon expected");
+    
+    insert(x,whichType(y),VARIABLE,"",YES,1);
+    
+    token = nextToken();																	
+    //can not really do nextToken() multiple times in one if, basically look at the same nextToken
+    if (!isNonKeyId(token) && token != "begin")
+    {
+       //please look into if we need ||'s or &&'s
+       processError("non-keyword identifier or \"begin\" expected");
+    }
+    
+    if (isNonKeyId(token))
+       varStmts();
 }
 
 /*DONE AND TESTED*/
@@ -479,6 +516,12 @@ storeTypes Compiler::whichType(string name) // tells which data type a name has
     
     storeTypes dataType;
     
+    if( name == "integer")
+       return INTEGER;
+    
+    if (name == "boolean")
+       return BOOLEAN;
+    
     if(isLiteral(name))
     {
         if(name.find("true") >= 0 || name.find("false") >= 0)
@@ -498,6 +541,7 @@ storeTypes Compiler::whichType(string name) // tells which data type a name has
         }
 		else
 		{
+         cout << endl << name  << endl;
 			processError("reference to undefined constant");
 		}
     }
@@ -522,11 +566,13 @@ string Compiler::whichValue(string name) // tells which value a name has
           {
              value = symbolTable.at(name).getValue();
           } catch (...) {
+             //cout << endl << name  << endl;
              processError("reference to undefined constant");
           }
        }
        else
        {
+          //cout << endl << name  << endl;
           processError("reference to undefined constant");
        }
     }
