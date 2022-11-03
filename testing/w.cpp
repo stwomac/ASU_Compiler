@@ -55,7 +55,7 @@ void Compiler::parser()
    
    
    //insert testing
-   
+   /*
     map<string, SymbolTableEntry>::iterator i;
    insert("WORDS,what,why,WHO",INTEGER,VARIABLE,"",YES,1);
    insert("ababa",INTEGER,VARIABLE,"",YES,1);
@@ -66,7 +66,7 @@ void Compiler::parser()
    storeTypes thing = symbolTable.at("huh").getDataType();
    
    cout << thing << " ";
-   
+   */
    /*
    for(i= symbolTable.begin(); i != symbolTable.end(); i++)
    {
@@ -117,7 +117,13 @@ void Compiler::parser()
        cout << "f" << endl;
    */
    
+   nextChar();
    
+   if(nextToken() != "program")
+      processError("keyword \"program\" expected");
+   
+   //cout << token << endl;
+   prog();
 }
 
 void Compiler::createListingTrailer()
@@ -128,17 +134,66 @@ void Compiler::createListingTrailer()
 // Methods implementing the grammar productions
 void Compiler::prog()           // stage 0, production 1
 {
+   
+    //cout <<" in prog ";
+    if (token != "program")
+       processError("keyword \"program\" expected");
     
+    progStmt();
+    
+    if (token == "const")
+       consts();
+    /*
+    if (token == "var")
+       vars();
+    
+    if (token != "begin")
+       processError("keyword \"begin\" expected");
+    
+    beginEndStmt();
+   
+    if (token != "$")
+       processError("no text may follow \"end\"");
+    */
+    
+    processError("completed const");
 }
 
 void Compiler::progStmt()       // stage 0, production 2
 {
+   //cout << "in progStmt " << token << " ";
+    string x;
     
+    if (token != "program")
+       processError("keyword \"program\" expected");
+    
+    x = nextToken();
+    
+    //cout << token <<  " ";
+    
+    if (!isNonKeyId(token))
+       processError("program name expected");
+    
+    if (nextToken() != ";")			//psuedo is nextToken()
+       processError("semicolon expected");
+    
+    nextToken();
+    
+    code("program", x);
+    
+    insert(x,PROG_NAME,CONSTANT,x,NO,0); //fix
 }
 
+/*DONE BUT UNTESTED*/
 void Compiler::consts()         // stage 0, production 3
 {
-    
+   if (token != "const")
+      processError("keyword \"const\" expected");
+   
+   if (!isNonKeyId(nextToken())) 		//pseudo is !isNonKeyId(nextToken())
+      processError("non-keyword identifier must follow \"const\"");
+   
+   constStmts();
 }
 
 void Compiler::vars()           // stage 0, production 4
@@ -151,7 +206,7 @@ void Compiler::beginEndStmt()   // stage 0, production 5
     
 }
 
-/*FINISH ALL IS STATEMENTS BEFORE MOVING UP*/
+/*DONE BUT UNTESTED*/
 void Compiler::constStmts()     // stage 0, production 6
 {
     string x,y;
@@ -197,9 +252,13 @@ void Compiler::constStmts()     // stage 0, production 6
     if (nextToken() != ";")
        processError("semicolon expected");
     
-    if (!isInteger(y) && !isBoolean(y))
-       processError("data type of token on the right-hand side must be INTEGER or BOOLEAN");
+    //cout << endl << y << " " ;
     
+    if (whichType(y) != INTEGER && whichType(y) != BOOLEAN)
+    {
+       //cout  << y << endl;
+       processError("data type of token on the right-hand side must be INTEGER or BOOLEAN, womack");
+    }    
     insert(x,whichType(y),CONSTANT,whichValue(y),YES,1); 
     
     x = nextToken();
@@ -208,7 +267,10 @@ void Compiler::constStmts()     // stage 0, production 6
        processError("non-keyword identifier, \"begin\", or \"var\" expected");
     
     if (isNonKeyId(x))
+    {
+       cout << x << " ";
        constStmts();
+    }
 }
 
 void Compiler::varStmts()       // stage 0, production 7
@@ -284,6 +346,8 @@ bool Compiler::isSpecialSymbol(char c) const // determines if c is a special sym
 /*DONE AND TESTED*/
 bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id
 {
+   if(isKeyword(s))
+      return false;
    //cout << "|hi|";
 	if(!islower(s[0]) ){
       //cout << "F";
@@ -307,7 +371,11 @@ bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id
 bool Compiler::isInteger(string s) const  // determines if s is an integer
 {
     for(uint i = 0; i < s.length(); i++){
-		if (!isdigit(s[i]))
+		//this code is for catching + or - unsure if necessary
+      //if(i == 0 && (s[i] == '+' || s[i] == '-'))
+         //continue;
+      
+      if (!isdigit(s[i]))
 			return false;
 		
 	}
@@ -337,7 +405,7 @@ bool Compiler::isLiteral(string s) const  // determines if s is a literal
 	// if straight bool or int then your fine
 	if(isBoolean(s) || isInteger(s))
     {
-        cout << " in here ";
+        //cout << " in here ";
 		return true;
 	}
 	// if it starts with not, the rest should be a bool
@@ -405,6 +473,7 @@ void Compiler::insert(string externalName, storeTypes inType, modes inMode, stri
    }
 }
 
+/*DONE AND TESTED*/
 storeTypes Compiler::whichType(string name) // tells which data type a name has
 {
     
@@ -437,6 +506,8 @@ storeTypes Compiler::whichType(string name) // tells which data type a name has
     
     //return INTEGER;
 }
+
+/*DONE and NOT TESTED*/
 string Compiler::whichValue(string name) // tells which value a name has
 {
     string value = "value never set";
@@ -465,23 +536,45 @@ string Compiler::whichValue(string name) // tells which value a name has
 
 void Compiler::code(string op, string operand1 , string operand2 )
 {
-    
+    if (op == "program")
+       emitPrologue(operand1);
+    else if (op == "end")
+       emitEpilogue();
+    else
+       processError("compiler error since function code should not be called with illegal arguments");
 }
 
 // Emit Functions
 void Compiler::emit(string label , string instruction , string operands , string comment )
 {
-    
+    objectFile << left;
+    objectFile << setw(8) << label;
+    objectFile << setw(8) << instruction;
+    objectFile << setw(24) << operands;
+    objectFile << comment << endl;
 }
 
 void Compiler::emitPrologue(string progName, string s)
 {
-    
+    time_t now = time (NULL);
+    objectFile << "; " << left << setw(35) << "JohnPaul Flores & Steven Womack " << right << ctime(&now);
+   
+   //includes
+    objectFile << "%INCLUDE " << "\"Along32.inc\"" << endl;
+    objectFile << "%INCLUDE " << "\"Macros_Along.inc\"" << endl;
+   
+    emit("SECTION", ".text");
+   //may run into program name length errors?
+    emit("global", "_start", "", "; program " + progName);
+    objectFile << "\n";
+    emit("_start:");
 }
 
 void Compiler::emitEpilogue(string a, string b)
 {
-    
+    emit("","Exit", "{0}");
+    objectFile << "\n";
+    emitStorage();
 }
 
 void Compiler::emitStorage()
@@ -618,7 +711,7 @@ string Compiler::genInternalName(storeTypes stype) const
 /*DONE AND TESTED*/
 void Compiler::processError(string err)
 {
-   cout << "what?" << endl;
+   //cout << "what?" << endl;
     //Error: Line 7: ":" expected
     listingFile << "Error: Line " << lineNo << ": " << err << "\n";
     
