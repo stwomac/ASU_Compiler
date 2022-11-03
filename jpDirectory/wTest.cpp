@@ -231,7 +231,7 @@ void Compiler::emitPrologue(string progName, string s) // uhhh done? I would rea
    */
    //time and nams
    time_t now = time (NULL);
-   objectFile << "; " << setw(35) << "JohnPaul Flores & Steven Womack " << ctime(&now);
+   objectFile << "; " << setw(35) << left << "JohnPaul Flores & Steven Womack " << right << ctime(&now);
    
    //includes
    objectFile << "%INCLUDE " << "\"Along32.inc\"" << endl;
@@ -239,7 +239,7 @@ void Compiler::emitPrologue(string progName, string s) // uhhh done? I would rea
    
    emit("SECTION", ".text");
    //may run into program name length errors?
-   emit("global", "_start", "", "; program" + progName);
+   emit("global", "_start", "", "; program " + progName);
    objectFile << "\n";
    emit("_start:");
 }
@@ -269,7 +269,7 @@ void Compiler::emitStorage()  //first stable version
       //see sample output - basically printing the int name, then dataType, etc
       if(x.second.getAlloc() == YES && x.second.getMode() == CONSTANT){
          //may need to look at booleans
-         emit(x.second.getInternalName(), x.second.getDataType(), to_string(x.second.getValue()), comment) //the line?
+         emit(x.second.getInternalName(), to_string(x.second.getDataType()), x.second.getValue(), comment); //the line?
 	  }
    }
    
@@ -280,11 +280,11 @@ void Compiler::emitStorage()  //first stable version
    //for those entries in the symbolTable that have an allocation of YES and a storage mode of VARIABLE
    for(auto const& x : symbolTable) 
    { 
-      string comment = "; "
+      string comment = "; ";
       comment += x.first;
       //see sample output - basically printing the int name, then dataType, etc
       if(x.second.getAlloc() == YES && x.second.getMode() == VARIABLE){
-         emit(x.second.getInternalName(), x.second.getDataType(), to_string(x.second.getUnits()), comment) //the line?
+         emit(x.second.getInternalName(), to_string(x.second.getDataType()), to_string(x.second.getUnits()), comment); //the line?
       }
    }
 }
