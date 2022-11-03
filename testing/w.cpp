@@ -640,9 +640,7 @@ void Compiler::code(string op, string operand1 , string operand2 )
 // Emit Functions
 void Compiler::emit(string label , string instruction , string operands , string comment )
 {
-   if(instruction == "Exit")
-      //cout << "made it to internal emit \n";
-    objectFile << left;
+   objectFile << left;
    objectFile << setw(8) << label;
    objectFile << setw(8) << instruction;
    objectFile << setw(24) << operands;
