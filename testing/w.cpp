@@ -32,7 +32,10 @@ void Compiler::createListingHeader()
 
 void Compiler::parser()
 {
+   //varibale delimit testing
+   //cout << isNonKeyId("a234567890abc4_aa") << " " << isNonKeyId("a234567890abc4aaaaaa") << endl;
    
+   //objectFile Testing
    //objectFile << "words";
    //objectFile.close();
    /* IDS testing
@@ -417,9 +420,14 @@ bool Compiler::isSpecialSymbol(char c) const // determines if c is a special sym
 /*DONE AND TESTED*/
 bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id
 {
+   if(s.length() > 15)
+   {s = s.substr(0,15);}
    if(isKeyword(s))
       return false;
    //cout << "|hi|";
+   if(s[s.length()-1] == '_')
+      return false;
+   
 	if(!islower(s[0]) ){
       //cout << "F";
 		return false;
@@ -495,6 +503,9 @@ void Compiler::insert(string externalName, storeTypes inType, modes inMode, stri
 {
    
    string name = externalName;
+   
+   if(name.length() > 15)
+   {name = name.substr(0,15);}
    
    while(name != "")
    {
@@ -589,10 +600,12 @@ string Compiler::whichValue(string name) // tells which value a name has
     {
        if(symbolTable.find(name) != symbolTable.end() )
        {
-          try
+          if(symbolTable.at(name).getValue() != "")
           {
              value = symbolTable.at(name).getValue();
-          } catch (...) {
+          }
+          else
+          {
              //cout << endl << name  << endl;
              processError("reference to undefined constant");
           }
