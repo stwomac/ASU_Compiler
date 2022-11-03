@@ -633,7 +633,7 @@ void Compiler::emitPrologue(string progName, string s)
    
    //includes
    objectFile << "%INCLUDE " << "\"Along32.inc\"" << endl;
-   objectFile << "%INCLUDE " << "\"Macros_Along.inc\"" << endl;
+   objectFile << "%INCLUDE " << "\"Macros_Along.inc\"\n" << endl;
    
    emit("SECTION", ".text");
    //may run into program name length errors?
@@ -669,7 +669,19 @@ void Compiler::emitStorage()
       //see sample output - basically printing the int name, then dataType, etc
       if(x.second.getAlloc() == YES && x.second.getMode() == CONSTANT){
          //may need to look at booleans
-         emit(x.second.getInternalName(), to_string(x.second.getDataType()), x.second.getValue(), comment); //the line?
+         string val;
+         if(x.second.getValue() == "true")
+         {
+            emit(x.second.getInternalName(), "dd", "-1", comment);
+         }
+         else if(x.second.getValue() == "false")
+         {
+            emit(x.second.getInternalName(), "dd", "0", comment);
+         }
+         else
+         {
+            emit(x.second.getInternalName(), "dd", x.second.getValue(), comment); //the line?
+         }
 	  }
    }
    
@@ -684,7 +696,7 @@ void Compiler::emitStorage()
       comment += x.first;
       //see sample output - basically printing the int name, then dataType, etc
       if(x.second.getAlloc() == YES && x.second.getMode() == VARIABLE){
-         emit(x.second.getInternalName(), to_string(x.second.getDataType()), to_string(x.second.getUnits()), comment); //the line?
+         emit(x.second.getInternalName(), "resd", to_string(x.second.getUnits()), comment); //the line?
       }
    }
    
