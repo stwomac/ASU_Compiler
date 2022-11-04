@@ -7,7 +7,7 @@
 
 using namespace std;
 
-/*NOTES FOR JP nextToken, nextChar, and isSpecialSymbol are done*/
+/*NOTES FOR JP nextToken, nextChar, and isSpecialSymbol are done*/ //lineNo
 
 Compiler::Compiler(char **argv) // constructor
 {
@@ -26,8 +26,8 @@ Compiler::~Compiler()           // destructor
 void Compiler::createListingHeader()
 {
    time_t now = time (NULL);
-   listingFile << "STAGE0:" << "JohnPaul Flores, Steven Womack " << ctime(&now) << endl;
-   listingFile << "LINE NO." << setw(30) << right << "SOURCE STATEMENT " << "\n\n";
+   listingFile << "STAGE0:  " << "JohnPaul Flores, Steven Womack  " << ctime(&now) << endl;
+   listingFile << "LINE NO." << setw(30) << right << "SOURCE STATEMENT" << left << "\n\n";
    //line numbers and source statements should be aligned under the headings 
 }
 
@@ -46,9 +46,9 @@ void Compiler::parser()
 void Compiler::createListingTrailer()                                               //DONE
 {
 	if (errorCount == 1)
-		listingFile << "\nCOMPILATION TERMINATED" << setw(7) << right << errorCount << " ERRORS ENCOUNTERED";
+		listingFile << "\nCOMPILATION TERMINATED" << setw(7) << right << errorCount << " ERRORS ENCOUNTERED\n";
 	else
-		listingFile << "\nCOMPILATION TERMINATED" << setw(7) << right << errorCount << " ERRORS ENCOUNTERED";
+		listingFile << "\nCOMPILATION TERMINATED" << setw(7) << right << errorCount << " ERRORS ENCOUNTERED\n";
 }
 
 // Methods implementing the grammar productions
@@ -349,6 +349,10 @@ bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id
    else if(!islower(s[s.length() - 1]) && !isdigit(s[s.length() - 1]))
    {
       return false;
+   }
+   if (s.length() < 2 && islower(s[0]))
+   {
+	   return true;
    }
 	//cout << "{str length: " << s.length() << " }";
 	for(uint i = 1; i < s.length() - 2; i++){
@@ -660,6 +664,7 @@ char Compiler::nextChar() // returns the next character or END_OF_FILE marker
     static char preCh = '\n';
     
     if(sourceFile.eof())
+	//if(ch == END_OF_FILE)
     {
        ch = END_OF_FILE;
        return ch;
@@ -668,7 +673,7 @@ char Compiler::nextChar() // returns the next character or END_OF_FILE marker
     if(preCh == '\n')
     {
        lineNo++;
-       listingFile << setw(5) << lineNo << '|';
+       listingFile << setw(5) << right << lineNo << '|';
     }
     
     listingFile << ch;
@@ -782,7 +787,9 @@ void Compiler::processError(string err)
 {
    //cout << "what?" << endl;
     //Error: Line 7: ":" expected
-    listingFile << "Error: Line " << lineNo << ": " << err << "\n";
+	errorCount++;
+    listingFile << "\nError: Line " << lineNo << ": " << err << "\n";
+	createListingTrailer();
     
     sourceFile.close();
     listingFile.close();
