@@ -1,0 +1,11 @@
+STAGE0:  JohnPaul Flores, Steven Womack  Fri Nov  4 17:47:10 2022
+
+LINE NO.              SOURCE STATEMENT
+
+    1|program stage0no037_this_name_is_really_long;
+    2|    const
+    3|      stage0no037_this_name_is_really_long = true;
+
+Error: Line 3: symbol stage0no037_thi is multiply defined
+
+COMPILATION TERMINATED      1 ERROR ENCOUNTERED

@@ -1,0 +1,11 @@
+STAGE0:  JohnPaul Flores, Steven Womack  Fri Nov  4 17:47:10 2022
+
+LINE NO.              SOURCE STATEMENT
+
+    1|program stage0no040
+    2|      {semicolon expected after program name}
+    3|
+    4|   var 
+Error: Line 4: semicolon expected
+
+COMPILATION TERMINATED      1 ERROR ENCOUNTERED
