@@ -1,0 +1,12 @@
+STAGE0:  JohnPaul Flores, Steven Womack  Fri Nov  4 17:47:10 2022
+
+LINE NO.              SOURCE STATEMENT
+
+    1|{contributed by Joel King, 2021-Nov-28}
+    2|program    stage0no052; {tests: const non_key_id = not non_key_id;}
+    3|  const yes=true;no=false;
+    4|    should_be_true = not no;
+    5|    should_be_false = not yes;
+    6|  begin
+    7|  end.
+COMPILATION TERMINATED      0 ERRORS ENCOUNTERED

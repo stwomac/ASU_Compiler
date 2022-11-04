@@ -1,0 +1,20 @@
+1,4c1,4
+< STAGE0:  JohnPaul Flores, Steven Womack  Fri Nov  4 17:47:09 2022
+< 
+< LINE NO.              SOURCE STATEMENT
+< 
+---
+> STAGE0:  YOUR NAME(S)       Mon Oct 19 17:06:18 2020
+> 
+> LINE NO.              SOURCE STATEMENT
+> 
+11,14c11,14
+<     7|       asis: integr;
+< Error: Line 7: illegal type follows ":"
+< 
+< COMPILATION TERMINATED      1 ERROR ENCOUNTERED
+---
+>     7|       asis: integr;
+> Error: Line 7: illegal type follows ":"
+> 
+> COMPILATION TERMINATED      1 ERROR ENCOUNTERED

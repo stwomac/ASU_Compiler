@@ -1,0 +1,9 @@
+STAGE0:  JohnPaul Flores, Steven Womack  Fri Nov  4 17:47:09 2022
+
+LINE NO.              SOURCE STATEMENT
+
+    1|program stage0no016;
+    2|      { { tests embedded comments should be illegal } }
+Error: Line 2: '}' cannot begin token
+
+COMPILATION TERMINATED      1 ERROR ENCOUNTERED

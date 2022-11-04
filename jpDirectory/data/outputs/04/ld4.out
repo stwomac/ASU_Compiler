@@ -1,0 +1,20 @@
+1,4c1,4
+< STAGE0:  JohnPaul Flores, Steven Womack  Fri Nov  4 17:47:09 2022
+< 
+< LINE NO.              SOURCE STATEMENT
+< 
+---
+> STAGE0:  YOUR NAME(S)       Mon Oct 19 17:06:18 2020
+> 
+> LINE NO.              SOURCE STATEMENT
+> 
+9,12c9,12
+<     5|       x: integer; 
+< Error: Line 5: symbol x is multiply defined
+< 
+< COMPILATION TERMINATED      1 ERROR ENCOUNTERED
+---
+>     5|       x: integer; 
+> Error: Line 5: symbol x is multiply defined
+> 
+> COMPILATION TERMINATED      1 ERROR ENCOUNTERED

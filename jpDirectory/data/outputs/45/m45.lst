@@ -1,0 +1,10 @@
+STAGE0:  JohnPaul Flores, Steven Womack  Fri Nov  4 17:47:10 2022
+
+LINE NO.              SOURCE STATEMENT
+
+    1|program stage0no045;
+    2|  var
+    3|    b, var,
+Error: Line 3: non-keyword identifier expected
+
+COMPILATION TERMINATED      1 ERROR ENCOUNTERED
