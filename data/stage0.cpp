@@ -25,14 +25,15 @@ Compiler::~Compiler()           // destructor
 
 void Compiler::createListingHeader()
 {
-    listingFile << "STAGE0:" << "JohnPaul Flores, Steven Womack" << "001" << endl;
-    listingFile << "LINE " << lineNo << ":" << "SOURCE STATEMENT" << endl;
-   //line numbers and source statements should be aligned under the headings 
+    time_t now = time (NULL);
+    listingFile << "STAGE0:  " << "JohnPaul Flores, Steven Womack  " << ctime(&now) << "\r\n";
+    listingFile << "LINE NO." << setw(30) << right << "SOURCE STATEMENT" << left << "\r\n\r\n" << right;
+    //line numbers and source statements should be aligned under the headings 
 }
 
 void Compiler::parser()
 {
-	cout << "bwhaha" << endl;
+	//cout << "bwhaha" << endl;
    //varibale delimit testing
    //cout << isNonKeyId("a234567890abc4_aa") << " " << isNonKeyId("a234567890abc4aaaaaa") << endl;
    
@@ -134,7 +135,10 @@ void Compiler::parser()
 
 void Compiler::createListingTrailer()
 {
-    
+    if (errorCount == 1)
+		listingFile << "\r\nCOMPILATION TERMINATED" << setw(7) << right << errorCount << " ERRORS ENCOUNTERED\r\n";
+	 else
+		listingFile << "\r\nCOMPILATION TERMINATED" << setw(7) << right << errorCount << " ERRORS ENCOUNTERED\r\n";
 }
 
 // Methods implementing the grammar productions
@@ -421,45 +425,53 @@ bool Compiler::isSpecialSymbol(char c) const // determines if c is a special sym
 /*DONE AND TESTED*/
 bool Compiler::isNonKeyId(string s) const // determines if s is a non_key_id
 {
-   if(s.length() > 15)
-   {s = s.substr(0,15);}
-   if(isKeyword(s))
-      return false;
-   //cout << "|hi|";
-   if(s[s.length()-1] == '_')
-      return false;
-   
-	if(!islower(s[0]) ){
-      //cout << "F";
-		return false;
-	}
-   else if(!islower(s[s.length() - 1]) && !isdigit(s[s.length() - 1]))
-   {
-      return false;
-   }
+    if(s.length() > 15)
+    {s = s.substr(0,15);}
+ 
+    if(isKeyword(s))
+       return false;
+    
+    //cout << "|hi|";
+    
+    if(s[s.length()-1] == '_')
+       return false;
+    
+	 if(!islower(s[0]) )
+    {
+       //cout << "F";
+	 	 return false;
+	 }
+    else if(!islower(s[s.length() - 1]) && !isdigit(s[s.length() - 1]))
+    {
+       return false;
+    }
+    
     if(s.length() < 2 && islower(s[0]))
     {return true;}
-	//cout << "{str length: " << s.length() << " }";
-	for(uint i = 1; i < s.length() - 2; i++){
-		if (s[i] == '_'){
-			if(s[i+1] == '_'){
-				return false;
-			}
-		}
-	}
+	 //cout << "{str length: " << s.length() << " }";
+	 for(uint i = 1; i < s.length() - 2; i++)
+    {
+	 	 if (s[i] == '_')
+       {
+	 	 	 if(s[i+1] == '_')
+          {
+	 	 	 	return false;
+	 	 	 }
+	 	 }  
+	 }
     return true;
 }
 
 bool Compiler::isInteger(string s) const  // determines if s is an integer
 {
     for(uint i = 0; i < s.length(); i++){
-		//this code is for catching + or - unsure if necessary
-      //if(i == 0 && (s[i] == '+' || s[i] == '-'))
-         //continue;
-      
-      if (!isdigit(s[i]))
-			return false;
-		
+		 //this code is for catching + or - unsure if necessary
+       //if(i == 0 && (s[i] == '+' || s[i] == '-'))
+          //continue;
+       
+       if (!isdigit(s[i]))
+		 	 return false;
+		 
 	}
     return true;
 }
@@ -467,33 +479,34 @@ bool Compiler::isInteger(string s) const  // determines if s is an integer
 bool Compiler::isBoolean(string s) const  // determines if s is a boolean
 {
     if (s == "true" || s == "false")
-		return true;
-	else
-		return false;
+		 return true;
+	 else
+		 return false;
 }
 
 /*DONE AND TESTED*/
 bool Compiler::isLiteral(string s) const  // determines if s is a literal
 {
     // if s[0] == + or -, check +[possibilities] to be integer
-	if(s[0] == '+' || s[0] == '-')
+	 if(s[0] == '+' || s[0] == '-')
     {			
-        
-		if(isInteger(s.substr(1, s.length() - 1)))
-        {return true;}
-    
+         
+	 	 if(isInteger(s.substr(1, s.length() - 1)))
+       {return true;}
+     
     }
-	
-	// if straight bool or int then your fine
-	if(isBoolean(s) || isInteger(s))
+	 
+	 // if straight bool or int then your fine
+	 if(isBoolean(s) || isInteger(s))
     {
-        //cout << " in here ";
-		return true;
-	}
-	// if it starts with not, the rest should be a bool
-	if(s.substr(0, 3) == "not"){
-		if(isBoolean(s.substr(4, s.length() - 4)))
-        {return true;}
+       //cout << " in here ";
+	 	 return true;
+	 }
+	 // if it starts with not, the rest should be a bool
+	 if(s.substr(0, 3) == "not")
+    {
+		 if(isBoolean(s.substr(4, s.length() - 4)))
+          {return true;}
         
     }
     
@@ -505,57 +518,57 @@ bool Compiler::isLiteral(string s) const  // determines if s is a literal
 void Compiler::insert(string externalName, storeTypes inType, modes inMode, string inValue, allocation inAlloc, int inUnits)
 {
    
-   string name = externalName;
-   
-   if(name.length() > 15)
-   {name = name.substr(0,15);}
-   
-   while(name != "")
-   {
-      string tempName;
-      int i = name.find(",");
-      
-      if(name.length() <= 0)
-      {
-         name = "";
-         continue;
-      }
-      
-      if(i < 0 && name.length() > 0)
-      {
-         tempName = name;
-         name = "";
-      }
-      
-      if( i > -1)
-      {
-         tempName = name.substr(0,i);
-         name = name.substr(i+1, name.length() - 1);
-      }
-      
-      
-      if(symbolTable.find(tempName) != symbolTable.end())
-      { processError("multiple name definition"); }
-      else if(isKeyword(tempName))
-      { processError("illegal use of keyword");}
-      else if(symbolTable.size() > 256)
-      { processError("symbolTable is over maximum size");}
-      else
-      {
-         if(isupper(tempName[0]))
-         {
-            SymbolTableEntry s(tempName, inType, inMode, inValue, inAlloc, inUnits);
-            symbolTable.emplace(tempName,s);
-         }
-         else
-         {
-            SymbolTableEntry x(genInternalName(inType), inType, inMode, inValue, inAlloc, inUnits);
-            symbolTable.emplace(tempName,x);
-         }
-         
-      }
-      
-   }
+    string name = externalName;
+    
+    if(name.length() > 15)
+    {name = name.substr(0,15);}
+    
+    while(name != "")
+    {
+       string tempName;
+       int i = name.find(",");
+       
+       if(name.length() <= 0)
+       {
+          name = "";
+          continue;
+       }
+       
+       if(i < 0 && name.length() > 0)
+       {
+          tempName = name;
+          name = "";
+       }
+       
+       if( i > -1)
+       {
+          tempName = name.substr(0,i);
+          name = name.substr(i+1, name.length() - 1);
+       }
+       
+       
+       if(symbolTable.find(tempName) != symbolTable.end())
+       { processError("multiple name definition"); }
+       else if(isKeyword(tempName))
+       { processError("illegal use of keyword");}
+       else if(symbolTable.size() > 256)
+       { processError("symbolTable is over maximum size");}
+       else
+       {
+          if(isupper(tempName[0]))
+          {
+             SymbolTableEntry s(tempName, inType, inMode, inValue, inAlloc, inUnits);
+             symbolTable.emplace(tempName,s);
+          }
+          else
+          {
+             SymbolTableEntry x(genInternalName(inType), inType, inMode, inValue, inAlloc, inUnits);
+             symbolTable.emplace(tempName,x);
+          }
+          
+       }
+       
+    }
 }
 
 /*DONE AND TESTED*/
@@ -587,7 +600,7 @@ storeTypes Compiler::whichType(string name) // tells which data type a name has
 		}
     }
 	
-	return dataType;
+	 return dataType;
     
     //return INTEGER;
 }
@@ -643,88 +656,87 @@ void Compiler::code(string op, string operand1 , string operand2 )
 // Emit Functions
 void Compiler::emit(string label , string instruction , string operands , string comment )
 {
-   if(instruction == "Exit")
-      //cout << "made it to internal emit \n";
+   
     objectFile << left;
-   objectFile << setw(8) << label;
-   objectFile << setw(8) << instruction;
-   objectFile << setw(24) << operands;
-   objectFile << comment << endl;
+    objectFile << setw(8) << label;
+    objectFile << setw(8) << instruction;
+    objectFile << setw(24) << operands;
+    objectFile << comment << "\r\n";
 }
 
 void Compiler::emitPrologue(string progName, string s)
 {
     time_t now = time (NULL);
-   objectFile << "; " << setw(35) << left << "JohnPaul Flores & Steven Womack " << right << ctime(&now);
-   
-   //includes
-   objectFile << "%INCLUDE " << "\"Along32.inc\"" << endl;
-   objectFile << "%INCLUDE " << "\"Macros_Along.inc\"\n" << endl;
-   
-   emit("SECTION", ".text");
-   //may run into program name length errors?
-   emit("global", "_start", "", "; program " + progName);
-   objectFile << "\n";
-   emit("_start:");
+    objectFile << "; " << setw(35) << left << "JohnPaul Flores & Steven Womack " << right << ctime(&now);
+    
+    //includes
+    objectFile << "%INCLUDE " << "\"Along32.inc\"" << "\r\n";
+    objectFile << "%INCLUDE " << "\"Macros_Along.inc\"\r\n" << "\r\n";
+    
+    emit("SECTION", ".text");
+    //may run into program name length errors?
+    emit("global", "_start", "", "; program " + progName);
+    objectFile << "\r\n";
+    emit("_start:");
 }
 
 void Compiler::emitEpilogue(string a, string b)
 {
    emit("","Exit", "{0}");
-   objectFile << "\n";
+   objectFile << "\r\n";
    emitStorage();
 }
 
 void Compiler::emitStorage()
 {
     //showing structure of symbolTable. basically a dictionary of lists
-   //map<string, SymbolTableEntry> symbolTable;
-   //StmbolTableEntry[InternalName, dataType, Mode, Value, Allocation, Unit]
-   //[externalName, [InternalName, dataType, Mode, Value, Allocation, Unit]
-   
-   //emmiting the .data section
-   
-   
-   emit("SECTION", ".data");
-   
-   //for those entries in the symbolTable that have an allocation of YES and a storage mode of CONSTANT
-   for(auto const& x : symbolTable) 
-   { 
-      string comment = "; ";
-      comment += x.first;
-      //see sample output - basically printing the int name, then dataType, etc
-      if(x.second.getAlloc() == YES && x.second.getMode() == CONSTANT){
-         //may need to look at booleans
-         string val;
-         if(x.second.getValue() == "true")
-         {
-            emit(x.second.getInternalName(), "dd", "-1", comment);
-         }
-         else if(x.second.getValue() == "false")
-         {
-            emit(x.second.getInternalName(), "dd", "0", comment);
-         }
-         else
-         {
-            emit(x.second.getInternalName(), "dd", x.second.getValue(), comment); //the line?
-         }
-	  }
-   }
-   
-   //emitting the .bss section on a newline
-   objectFile << "\n";
-   emit("SECTION", ".bss");
-   
-   //for those entries in the symbolTable that have an allocation of YES and a storage mode of VARIABLE
-   for(auto const& x : symbolTable) 
-   { 
-      string comment = "; ";
-      comment += x.first;
-      //see sample output - basically printing the int name, then dataType, etc
-      if(x.second.getAlloc() == YES && x.second.getMode() == VARIABLE){
-         emit(x.second.getInternalName(), "resd", to_string(x.second.getUnits()), comment); //the line?
-      }
-   }
+    //map<string, SymbolTableEntry> symbolTable;
+    //StmbolTableEntry[InternalName, dataType, Mode, Value, Allocation, Unit]
+    //[externalName, [InternalName, dataType, Mode, Value, Allocation, Unit]
+    
+    //emmiting the .data section
+    
+    
+    emit("SECTION", ".data");
+    
+    //for those entries in the symbolTable that have an allocation of YES and a storage mode of CONSTANT
+    for(auto const& x : symbolTable) 
+    { 
+       string comment = "; ";
+       comment += x.first;
+       //see sample output - basically printing the int name, then dataType, etc
+       if(x.second.getAlloc() == YES && x.second.getMode() == CONSTANT){
+          //may need to look at booleans
+          string val;
+          if(x.second.getValue() == "true")
+          {
+             emit(x.second.getInternalName(), "dd", "-1", comment);
+          }
+          else if(x.second.getValue() == "false")
+          {
+             emit(x.second.getInternalName(), "dd", "0", comment);
+          }
+          else
+          {
+             emit(x.second.getInternalName(), "dd", x.second.getValue(), comment); //the line?
+          }
+	   }
+    }
+    
+    //emitting the .bss section on a newline
+    objectFile << "\r\n";
+    emit("SECTION", ".bss");
+    
+    //for those entries in the symbolTable that have an allocation of YES and a storage mode of VARIABLE
+    for(auto const& x : symbolTable) 
+    { 
+       string comment = "; ";
+       comment += x.first;
+       //see sample output - basically printing the int name, then dataType, etc
+       if(x.second.getAlloc() == YES && x.second.getMode() == VARIABLE){
+          emit(x.second.getInternalName(), "resd", to_string(x.second.getUnits()), comment); //the line?
+       }
+    }
    
    
 }
@@ -858,9 +870,9 @@ string Compiler::genInternalName(storeTypes stype) const
 /*DONE AND TESTED*/
 void Compiler::processError(string err)
 {
-   //cout << "what?" << endl;
-    //Error: Line 7: ":" expected
-    listingFile << "Error: Line " << lineNo << ": " << err << "\n";
+    errorCount++;
+    listingFile << "\nError: Line " << lineNo << ": " << err << "\n";
+	 createListingTrailer();
     
     sourceFile.close();
     listingFile.close();

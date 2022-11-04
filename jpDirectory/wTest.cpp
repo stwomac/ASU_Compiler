@@ -27,7 +27,7 @@ void Compiler::createListingHeader()
 {
    time_t now = time (NULL);
    listingFile << "STAGE0:  " << "JohnPaul Flores, Steven Womack  " << ctime(&now) << endl;
-   listingFile << "LINE NO." << setw(30) << right << "SOURCE STATEMENT" << left << "\n\n";
+   listingFile << "LINE NO." << setw(30) << right << "SOURCE STATEMENT" << left << "\n\n" << right;
    //line numbers and source statements should be aligned under the headings 
 }
 
