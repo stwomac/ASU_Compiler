@@ -136,7 +136,7 @@ void Compiler::parser()
 void Compiler::createListingTrailer()
 {
     if (errorCount == 1)
-		listingFile << "\r\nCOMPILATION TERMINATED" << setw(7) << right << errorCount << " ERRORS ENCOUNTERED\r\n";
+		listingFile << "\r\nCOMPILATION TERMINATED" << setw(7) << right << errorCount << " ERROR ENCOUNTERED\r\n";
 	 else
 		listingFile << "\r\nCOMPILATION TERMINATED" << setw(7) << right << errorCount << " ERRORS ENCOUNTERED\r\n";
 }
@@ -548,7 +548,11 @@ void Compiler::insert(string externalName, storeTypes inType, modes inMode, stri
        
        
        if(symbolTable.find(tempName) != symbolTable.end())
-       { processError("multiple name definition"); }
+       { 
+          string err = "symbol " + tempName + " is multiply defined";
+          processError(err); 
+          
+       }
        else if(isKeyword(tempName))
        { processError("illegal use of keyword");}
        else if(symbolTable.size() > 256)
@@ -871,7 +875,7 @@ string Compiler::genInternalName(storeTypes stype) const
 void Compiler::processError(string err)
 {
     errorCount++;
-    listingFile << "\nError: Line " << lineNo << ": " << err << "\n";
+    listingFile << "\r\nError: Line " << lineNo << ": " << err << "\r\n";
 	 createListingTrailer();
     
     sourceFile.close();
