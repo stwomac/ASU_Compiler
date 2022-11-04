@@ -32,6 +32,10 @@ void Compiler::createListingHeader()
 
 void Compiler::parser()
 {
+<<<<<<< HEAD
+	cout << "shell worked" << endl;
+=======
+>>>>>>> f77b1e27cc552eb03746bd36d7e132bd787e6d49
    //varibale delimit testing
    //cout << isNonKeyId("a234567890abc4_aa") << " " << isNonKeyId("a234567890abc4aaaaaa") << endl;
    
