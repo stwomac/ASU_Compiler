@@ -1,0 +1,6 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|{ comments are OK before the program statement }
+    2|program stage0no035;
+    3|    begin
+    4|    end.    {comments are OK after end.}

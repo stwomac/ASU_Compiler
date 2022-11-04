@@ -1,0 +1,5 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no042;
+    2|
+    3|	const big = 17; small = -big;Error: Line 3: integer expected after sign

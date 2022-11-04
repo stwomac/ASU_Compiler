@@ -1,0 +1,5 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no043;
+    2|
+    3|	const big = -1; small = not big;Error: Line 3: boolean expected after "not"

@@ -1,0 +1,6 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no040
+    2|      {semicolon expected after program name}
+    3|
+    4|   var Error: Line 4: semicolon expected

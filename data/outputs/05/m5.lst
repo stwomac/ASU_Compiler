@@ -1,0 +1,8 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no005;
+    2|      {illustrate erroneous use of Pascallite features.}
+    3|      {const must come before var}
+    4|
+    5|		 var y:integer;
+    6|    const Error: Line 6: non-keyword identifier or "begin" expected

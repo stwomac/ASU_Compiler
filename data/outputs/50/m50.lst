@@ -1,0 +1,8 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|{contributed by Zachary Deere & Ryan Dennis, 29-Oct-2018}
+    2|program    stage0no050;
+    3|     const
+    4|            a = 1;
+    5|            b = a;
+    6|            c = stage0no050; Error: Line 6: data type of token on the right-hand side must be INTEGER or BOOLEAN, womack

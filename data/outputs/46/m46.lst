@@ -1,0 +1,6 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program    stage0no046;   {here is a comment}
+    2|     const yes=true;no=false;
+    3|           small=0;smalleryet=-1;
+    4|           big = 1;  biggeryet = 2;  large = biggerError: Line 4: unexpected end of file

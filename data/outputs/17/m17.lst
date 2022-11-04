@@ -1,0 +1,7 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no017;
+    2|		  {demonstrate erroneous features of Pascallite}
+    3|		  {test reserved word split between two lines
+    4|	 should be error}
+    5|  conError: Line 5: keyword "begin" expected

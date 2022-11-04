@@ -1,0 +1,9 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no007;
+    2|      {illustrate erroneous use of Pascallite features.}
+    3|      {program should end with a period, not a semicolon}
+    4|
+    5|    const help = 32;
+    6|          ram = 3;
+    7|    begin end; Error: Line 7: period expected

@@ -1,0 +1,5 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no037_this_name_is_really_long;
+    2|    const
+    3|      stage0no037_this_name_is_really_long = true;Error: Line 3: multiple name definition

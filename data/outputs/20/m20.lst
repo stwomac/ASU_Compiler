@@ -1,0 +1,8 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no020;
+    2|		 { identifiers should not end with an underscore }
+    3|    const yes = true; no = false;
+    4|          small = 0; smalleryet ={} -1;
+    5|          big = 1; bigger_yet = 2;
+    6|        var   some_ Error: Line 6: non-keyword identifier must follow "var"

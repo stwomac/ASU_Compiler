@@ -1,0 +1,4 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no041;
+    2|	var const Error: Line 2: non-keyword identifier must follow "var"

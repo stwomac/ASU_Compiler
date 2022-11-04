@@ -1,0 +1,25 @@
+; JohnPaul Flores & Steven Womack    Thu Nov  3 17:57:37 2022
+%INCLUDE "Along32.inc"
+%INCLUDE "Macros_Along.inc"
+
+ SECTION   .text                        
+  global  _start                        ; program stage0no001
+
+ _start:                                
+        Exit    {0}                     
+
+SECTION .data                           
+I1      dd      1                       ; big
+I2      dd      2                       ; biggeryet
+I3      dd      2                       ; large
+B3      dd      0                       ; maybe
+B1      dd      0                       ; no
+B2      dd      -1                      ; small
+I0      dd      -1                      ; smalleryet
+B0      dd      -1                      ; yes
+
+SECTION .bss                            
+I5      resd    1                       ; many
+B4      resd    1                       ; right
+I4      resd    1                       ; some
+B5      resd    1                       ; wrong

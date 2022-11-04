@@ -1,0 +1,7 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no011;
+    2|   {no real numbers in our Pascallite}
+    3|
+    4|   const car = 2;
+    5|         wrong = 3.5Error: Line 5: semicolon expected

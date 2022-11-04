@@ -1,0 +1,4 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no016;
+    2|      { { tests embedded comments should be illegal } }Error: Line 2: '}' cannot begin token

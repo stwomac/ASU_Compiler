@@ -1,0 +1,5 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no045;
+    2|  var
+    3|    b, var,Error: Line 3: non-keyword identifier expected

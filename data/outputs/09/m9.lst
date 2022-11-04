@@ -1,0 +1,8 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no009;
+    2|    { { need a literal and '=' for a constant
+    3|  also test two opens and one close}
+    4|
+    5|   const car = 2;
+    6|         silly:bError: Line 6: "=" expected

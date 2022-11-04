@@ -1,0 +1,7 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no004;
+    2|      {x may not be redefined}
+    3|
+    4|   var x: integer; {x may not be redefined}
+    5|       x: integer; Error: Line 5: multiple name definition

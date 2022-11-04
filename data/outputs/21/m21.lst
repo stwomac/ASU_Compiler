@@ -1,0 +1,5 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no021;
+    2|		 { No caps for us at all}
+    3|    const YError: Line 3: illegal symbol

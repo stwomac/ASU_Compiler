@@ -1,0 +1,6 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no008;
+    2|	{reserved keyword var misused as nonkey_id}
+    3|
+    4|	const var Error: Line 4: non-keyword identifier must follow "const"

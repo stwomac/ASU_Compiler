@@ -1,0 +1,6 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no031;
+    2|  { smallest syntactically correct program }
+    3|    begin
+    4|    end.    

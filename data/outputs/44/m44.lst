@@ -1,0 +1,5 @@
+STAGE0:JohnPaul Flores, Steven Womack001
+LINE 0:SOURCE STATEMENT
+    1|program stage0no044;
+    2|  var
+    3|    a, b, c : integer, Error: Line 3: semicolon expected
