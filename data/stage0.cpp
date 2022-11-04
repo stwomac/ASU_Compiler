@@ -292,7 +292,7 @@ void Compiler::constStmts()     // stage 0, production 6
     if (whichType(y) != INTEGER && whichType(y) != BOOLEAN)
     {
        //cout  << y << endl;
-       processError("data type of token on the right-hand side must be INTEGER or BOOLEAN, womack");
+       processError("data type of token on the right-hand side must be INTEGER or BOOLEAN");
     }
     //cout << x << " " << whichType(y) << endl;;
     insert(x,whichType(y),CONSTANT,whichValue(y),YES,1); 
@@ -560,10 +560,11 @@ void Compiler::insert(string externalName, storeTypes inType, modes inMode, stri
        }
        else if(isKeyword(tempName))
        { processError("illegal use of keyword");}
-       else if(symbolTable.size() > 256)
+       else if(symbolTable.size() > 255)
        { processError("symbolTable is over maximum size");}
        else
        {
+          
           if(isupper(tempName[0]))
           {
              SymbolTableEntry s(tempName, inType, inMode, inValue, inAlloc, inUnits);
@@ -684,6 +685,11 @@ void Compiler::emitPrologue(string progName, string s)
     
     emit("SECTION", ".text");
     //may run into program name length errors?
+    
+    if(progName.length() > 15)
+    {
+        progName = progName.substr(0,15);
+    }
     emit("global", "_start", "", "; program " + progName);
     objectFile << "\r\n";
     emit("_start:");
