@@ -1053,7 +1053,7 @@ void Compiler::writeStmt()      // stage 1, production 7
 
 void Compiler::express()       // stage 1, production 9
 {
-   
+   string x = nextToken();
    
 }
 
@@ -1088,15 +1088,150 @@ void Compiler::factors()        // stage 1, production 14
    
 }
 
+/*Express will call a next token*/
+
+/*Untested but existing*/
 void Compiler::part()           // stage 1, production 15
 {
+   string x = token, y;
+   
+   if(x == "not")
+   {
+      y = nextToken();
+      if(y == "(")
+      {
+         
+         
+         express();
+         
+         //need to think about how the token comes out of express
+         //current expectation is that at the end of a function it will 
+         //call next token so we can look at it
+         if(token == ")");
+         {
+            //x = not
+            code(x, popOperand());
+         }
+         else 
+         {
+            processError("In Part: Expected ) after express is called");
+         }
+      }
+      else if(isBoolean(y))
+      {
+         if(y == "true")
+         {
+            pushOperand("false");
+         }
+         else
+         {
+            pushOperand("true");
+         }
+      }
+      else if(isNonKeyId(y))
+      {
+         //x = not
+         code(x,y);
+      }
+      else 
+      {
+         processError("In Part: Expected ( , boolean, or  after not");
+      }
+      
+   }
+   else if(x == "+")
+   {
+      y = nextToken();
+      if(y == "(")
+      {
+         
+         
+         express();
+        
+         if(token() != ")");
+         {
+            processError("In Part: Expected ) after express is called");
+         }
+      }
+      else if(isInteger(y) || isNonKeyId(y))
+      {
+         pushOperand(y);
+      }
+      else
+      {
+         processError("In Part: Expected (,INTEGER, or NON KEY ID after a + ");
+      }
+   }
+   else if(x == "-")
+   {
+      y = nextToken();
+      if(y == "(")
+      {
+         
+         
+         express();
+        
+         if(token() != ")");
+         {
+            processError("In Part: Expected ) after express is called");
+         }
+         
+         code("neg", popOperand());
+      }
+      else if(isInteger(y))
+      {
+         x += y;
+         pushOperand(z);
+      }
+      else if(isNonKeyId(y))
+      {
+         code("neg",y);
+      }
+      else
+      {
+         processError("In Part: Expected (,INTEGER, or NON KEY ID after a - ");
+      }
+   }
+   else if(isInteger(x) || isBoolean(x) || isNonKeyId(x))
+   {
+      pushOperand(x);
+   }
+   else if( x == "(")
+   {
+      express();
+        
+      if(token() != ")");
+      {
+         processError("In Part: Expected ) after express is called");
+      }
+   }
+   else
+   {
+      processError("not, +, -, (, INTEGER, true, false, or NON KEY ID expected in Part");
+   }
    
    
+   nextToken();
 }
 
 void Compiler::pushOperator(string op)
 {
    operatorStk.push(op);
+}
+
+
+void Compiler::pushOperand(string operand)
+{
+   if(isLiteral(operand))
+   {
+      if(symbolTable.find(operand) == symbolTable.empty())
+      {
+         //note need to ask motl if pushing the operand should be constant or variable
+         insert(operand,whichType(operand),CONSTANT,whichValue(operand),YES,1);
+      }
+      
+      operandStk.push(operand);
+   }
 }
 
 string Compiler::popOperator()
@@ -1110,20 +1245,6 @@ string Compiler::popOperator()
    else
    {
       processError("compiler error; operator stack underflow");
-   }
-}
-
-void Compiler::pushOperand(string operand)
-{
-   if(isLiteral(operand))
-   {
-      if(symbolTable.find(operand) == symbolTable.empty())
-      {
-         //note need to ask motl if pushing the operand should be constant or variable
-         insert(operand,whichType(operand),CONSTANT,whichValue(operand),YES,1);
-      }
-      
-      operandStk.push(operand);
    }
 }
 
@@ -1185,12 +1306,16 @@ bool Compiler::isTemporary(string s) const // determines if s represents a tempo
    return false;
 }
 
-void Compiler::emitReadCode(string operand, string s)
+/* Hey so somethin to thing about... the data you recieve at this point
+might not be validated, this is actually a thing to worry about if the validation
+should be before this, or right here in the emit code. */
+
+void Compiler::emitReadCode(string operand, string operand2)
 {
    
 }
 
-void Compiler::emitWriteCode(string operand, string s)
+void Compiler::emitWriteCode(string operand, string operand2)
 {
    
 }
@@ -1225,12 +1350,12 @@ void Compiler::emitModuloCode(string operand1, string operand2)         // op2 %
    
 }
 
-void Compiler::emitNegationCode(string operand1, string s)           // -op1
+void Compiler::emitNegationCode(string operand1, string operand2)           // -op1
 {
    
 }
 
-void Compiler::emitNotCode(string operand1, string s)                // !op1
+void Compiler::emitNotCode(string operand1, string operand2)                // !op1
 {
    
 }
