@@ -782,24 +782,6 @@ void Compiler::processError(string err)
 
 /*Changed Stage 0 Functions*/
 
-void Compiler::beginEndStmt()   // stage 0, production 5
-{
-     if (token != "begin")
-        processError("keyword \"begin\" expected");
-     
-     execStmts();
-     
-     //changing nextToken to token (gonna call next token at end of execStmts
-     if (token() != "end")
-        processError("keyword \"end\" expected");
-     
-     if (nextToken() != ".")
-        processError("period expected");
-     
-     nextToken();
-     //cout << " begin code end" << endl;
-     code("end", ".");
-}
 
 string Compiler::nextToken() // returns the next token or END_OF_FILE marker
 {
@@ -1016,79 +998,245 @@ void Compiler::code(string op, string operand1 , string operand2 )
        processError("compiler error since function code should not be called with illegal arguments");
 }
 
+void Compiler::beginEndStmt()   // stage 0, production 5
+{
+     if (token != "begin")
+        processError("keyword \"begin\" expected");
+     
+     execStmts();
+     
+     //changing nextToken to token (gonna call next token at end of execStmts
+     if (token() != "end")
+        processError("keyword \"end\" expected");
+     
+     if (nextToken() != ".")
+        processError("period expected");
+     
+     nextToken();
+     //cout << " begin code end" << endl;
+     code("end", ".");
+}
+
 void Compiler::execStmts()      // stage 1, production 2
 {
-   string x = nextToken();
+   nextToken();
    
-   if(isNonKeyId(x)  || x == "read" || x == "write");
-   {execStmt();}
+   if(isNonKeyId(token)    || 
+      token == "read"      ||
+      token == "write");
+   {
+      execStmt();
+ 
+      execStmts();
+   }
    
-   //CAN NOT GO FARTHER UNTIL WE KNOW IF EXECSTMT GETS A NEXT TOKEN
+   
    
 }
 
 void Compiler::execStmt()       // stage 1, production 3
 {
-   
+   if(isNonKeyId(token))
+   {
+      assignStmt();
+   }
+   else if(token == "read")
+   {
+      readStmt();
+   }
+   else if(token == "write")
+   {
+      writeStmt();
+   }
+   else
+   {
+      processError("invalid token in execStmt");
+   }
    
 }
 
+/* When Next Token is Called:
+Express - on start
+Part - on end only
+factors - none* 
+factor - none
+terms - none*
+term - none
+expresses - none*
+express - at the start
+*/
 void Compiler::assignStmt()     // stage 1, production 4
 {
+   pushOperand(token);
    
+   if(nextToken() != ":=");
+      processError(":= expected");
+   
+   pushOperator(":=");
+   
+   express();
+   
+   if(token != ";")
+      processError("; expected");
+   
+   code(popOperator(), popOperand(), popOperand());
    
 }
 
 void Compiler::readStmt()       // stage 1, production 5
 {
+   nextToken();
    
+   if(token  == "(")
+   {
+      if (!isNonKeyId(nextToken())) //psuedo is !isNonKeyId(nextToken())
+       processError("non-keyword identifier must follow \"(\"");
+    
+      string x = ids();
+      
+      if (token != ")")
+       processError("\")\" expected");
+      code("read", x);
+      
+      if(nextToken() != ";")
+         processError("\";\" expected");
+      
+   }
+   else
+   {
+      processError(" ( expected after read");
+   }
    
 }
 
 void Compiler::writeStmt()      // stage 1, production 7
 {
+   nextToken();
    
+   if(token  == "(")
+   {
+      if (!isNonKeyId(nextToken())) //psuedo is !isNonKeyId(nextToken())
+       processError("non-keyword identifier must follow \"(\"");
+    
+      string x = ids();
+      
+      if (token != ")")
+       processError("\")\" expected");
+      code("write", x);
+      
+      if(nextToken() != ";")
+         processError("\";\" expected");
+      
+   }
+   else
+   {
+      processError(" ( expected after write");
+   }
    
 }
 
 void Compiler::express()       // stage 1, production 9
 {
-   string x = nextToken();
+   nextToken();
+   if(token != "not"    && 
+      token != "true"   && 
+      token != "false"  &&
+      token != "("      &&
+      token != "+"      &&
+      token != "-"      &&
+      !isInteger(token) &&
+      !isNonKeyId(token))
+   {processError("'not','true','false','(','+','-', INTEGER,NON_KEY_ID is expected");}
+   
+   term();
+   expresses();
    
 }
 
+
+
 void Compiler::expresses()      // stage 1, production 10
 {
-   
+   if(token == "<>"  || 
+      token == "="   ||
+      token == "<="  ||
+      token == ">="  ||
+      token == "<"   ||
+      token == ">")
+   {
+      pushOperator(token);
+      nextToken();
+      term();
+      code(popOperator,popOperand,popOperand);
+      expresses();
+   }
    
 }
 
 void Compiler::term()           // stage 1, production 11
 {
-   
-   
+   if(token != "not"    && 
+      token != "true"   && 
+      token != "false"  &&
+      token != "("      &&
+      token != "+"      &&
+      token != "-"      &&
+      !isInteger(token) &&
+      !isNonKeyId(token))
+   {processError("'not','true','false','(','+','-', INTEGER,NON_KEY_ID is expected");}
+   factor();
+   terms();
    
 }
 
 void Compiler::terms()          // stage 1, production 12
 {
-   
+   if(token == "-"   ||
+      token == "+"   ||
+      token == "or")
+   {
+      pushOperator(token);
+      nextToken();
+      factor();
+      code(popOperator(),popOperand(),popOperand());
+      terms();
+   }
    
    
 }
 
 void Compiler::factor()         // stage 1, production 13
 {
-   
+   if(token != "not"    && 
+      token != "true"   && 
+      token != "false"  &&
+      token != "("      &&
+      token != "+"      &&
+      token != "-"      &&
+      !isInteger(token) &&
+      !isNonKeyId(token))
+   {processError("'not','true','false','(','+','-', INTEGER,NON_KEY_ID is expected");}
+   part();
+   factors();
    
 }
 
+/*draft*/
 void Compiler::factors()        // stage 1, production 14
 {
-   
+   if(token == "*"   || 
+      token == "div" || 
+      token == "mod" || 
+      token == "and")
+   {
+      pushOperator(token);
+      nextToken();
+      part();
+      code(popOperator(), popOperand(), popOperand());
+      factors();
+   }
 }
 
-/*Express will call a next token*/
 
 /*Untested but existing*/
 void Compiler::part()           // stage 1, production 15
@@ -1192,7 +1340,9 @@ void Compiler::part()           // stage 1, production 15
          processError("In Part: Expected (,INTEGER, or NON KEY ID after a - ");
       }
    }
-   else if(isInteger(x) || isBoolean(x) || isNonKeyId(x))
+   else if(isInteger(x) || 
+           isBoolean(x) || 
+           isNonKeyId(x))
    {
       pushOperand(x);
    }
