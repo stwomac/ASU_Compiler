@@ -1,0 +1,12 @@
+STAGE0:  JohnPaul Flores, Steven Womack  Tue Nov  8 14:16:00 2022
+
+LINE NO.              SOURCE STATEMENT
+
+    1|program stage1no123;
+    2|  { requires 13 temporaries }
+    3|var    sum,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z : integer;
+    4|begin
+    5|  read(
+Error: Line 5: keyword "end" expected
+
+COMPILATION TERMINATED      1 ERROR ENCOUNTERED

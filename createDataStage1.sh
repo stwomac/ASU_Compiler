@@ -1,13 +1,28 @@
 #/bin/bash
-make stage0
+make clean
+
+make stage1
+
+file=Makefile
+
+cd data
 
 rm -r outputs
 mkdir outputs
+rm -r executable
+mkdir executable
+
+
+cd ..
+
+cp stage1 data
+cd data
+
 for i in {101..178}
 do
    echo ${i} ha ha ha
 	touch m${i}.lst m${i}.asm
-	./stage0 ${i}.dat m${i}.lst m${i}.asm
+	./stage1 ${i}.dat m${i}.lst m${i}.asm
    
    
    if test -f ${i}.lst
@@ -24,8 +39,16 @@ do
       cp ${i}.asm outputs
    fi
    
+   sed -i 's/targetsAsmLanguage =.*/targetsAsmLanguage = m'${i}'/' $file
+   make m${i}
+   
 	mv m${i}.lst m${i}.asm outputs
 	cp ${i}.dat outputs
+   
+   
+   
+   mv m${i} executable
+   
 	cd outputs
 	mkdir ${i}
 	mv ${i}.dat m${i}.lst m${i}.asm ${i} 
@@ -43,6 +66,15 @@ do
 	cd ..
     
 done
+
+rm *.o
+
+cd ..
+
+rm -r source
+rm -r executables
+cp -r data/outputs/ source 
+cp -r data/executable/ executables
 
 
 

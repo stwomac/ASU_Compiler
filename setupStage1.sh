@@ -1,14 +1,24 @@
 #/bin/bash
 rm -r data
 mkdir data
-cd data
-mkdir outputs
+mkdir source
+mkdir executables
+rm Makefile
+rm stage1.h
+rm stage1main.C
 
-num=1
 
 cp /usr/local/4301/src/Makefile .
 cp /usr/local/4301/include/stage1.h .
 cp /usr/local/4301/src/stage1main.C .
+
+file=Makefile
+cp Makefile data
+
+sed -i 's/targets2srcfiles =.*/targets2srcfiles = stage1/' $file
+
+
+cd data
 
 for i in {101..178}
 do
@@ -19,6 +29,9 @@ do
    
 done
 
+cp /usr/local/4301/src/Makefile .
 
 clear
-ls
+
+cd ..
+ls 

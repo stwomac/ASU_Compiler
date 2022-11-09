@@ -1,0 +1,13 @@
+STAGE0:  JohnPaul Flores, Steven Womack  Tue Nov  8 14:15:59 2022
+
+LINE NO.              SOURCE STATEMENT
+
+    1|program stage1no102;
+    2|        {demonstrate correct usage of Pascallite features.}
+    3|  const  zero = 0; five = 5;
+    4|  var    a,b,c: integer; w,z: integer;
+    5|  begin
+    6|   read(
+Error: Line 6: keyword "end" expected
+
+COMPILATION TERMINATED      1 ERROR ENCOUNTERED

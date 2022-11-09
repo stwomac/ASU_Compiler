@@ -1,0 +1,11 @@
+1c1
+< STAGE0:  JohnPaul Flores, Steven Womack  Tue Nov  8 14:15:59 2022
+---
+> STAGE1:  YOUR NAME(S)       Thu Nov 19 08:15:22 2020
+13,14c13,15
+<     9|    c 
+< Error: Line 9: keyword "end" expected
+---
+>     9|    c := five * a
+>    10|    b:
+> Error: Line 10: one of "*", "and", "div", "mod", ")", "+", "-", ";", "<", "<=", "<>", "=", ">", ">=", or "or" expected

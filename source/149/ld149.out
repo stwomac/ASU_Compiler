@@ -1,0 +1,16 @@
+1c1
+< STAGE0:  JohnPaul Flores, Steven Womack  Tue Nov  8 14:16:01 2022
+---
+> STAGE1:  YOUR NAME(S)       Thu Nov 19 08:15:24 2020
+9,10c9,12
+<     5|  read(
+< Error: Line 5: keyword "end" expected
+---
+>     5|  read(a, b, c, d, e, f);
+>     6|  a := (a + b) + ((c + d) + (e + f));
+>     7|  write(a);
+>     8|end.
+12c14
+< COMPILATION TERMINATED      1 ERROR ENCOUNTERED
+---
+> COMPILATION TERMINATED      0 ERRORS ENCOUNTERED

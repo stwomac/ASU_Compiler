@@ -1,0 +1,10 @@
+1c1
+< ; JohnPaul Flores & Steven Womack    Tue Nov  8 14:15:59 2022
+---
+> ; YOUR NAME(S)       Thu Nov 19 08:15:22 2020
+9,10c9,10
+<         Exit    {0}                     
+< 
+---
+>         call    ReadInt                 ; read int; value placed in eax
+>         mov     [I1],eax                ; store eax at a

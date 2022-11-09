@@ -1,0 +1,15 @@
+1c1
+< STAGE0:  JohnPaul Flores, Steven Womack  Tue Nov  8 14:16:00 2022
+---
+> STAGE1:  YOUR NAME(S)       Thu Nov 19 08:15:22 2020
+12,13c12,14
+<     8|    e:
+< Error: Line 8: keyword "end" expected
+---
+>     8|    e:= (w<z) and (a or b);
+>     9|    d := (z >=3) or (w < 4);
+>    10|  end .
+15c16
+< COMPILATION TERMINATED      1 ERROR ENCOUNTERED
+---
+> COMPILATION TERMINATED      0 ERRORS ENCOUNTERED

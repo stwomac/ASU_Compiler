@@ -1,0 +1,14 @@
+STAGE0:  JohnPaul Flores, Steven Womack  Tue Nov  8 14:15:59 2022
+
+LINE NO.              SOURCE STATEMENT
+
+    1|program stage1no114;
+    2|        {demonstrate incorrect usage of Pascal assignment statements.}
+    3|  const  zero = 0;
+    4|         five = 5;
+    5|  var    a,b,c,z,  d,e: integer;
+    6|  begin
+    7|    d 
+Error: Line 7: keyword "end" expected
+
+COMPILATION TERMINATED      1 ERROR ENCOUNTERED

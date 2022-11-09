@@ -1,0 +1,10 @@
+1c1
+< STAGE0:  JohnPaul Flores, Steven Womack  Tue Nov  8 14:15:59 2022
+---
+> STAGE1:  YOUR NAME(S)       Thu Nov 19 08:15:22 2020
+12,13c12,13
+<     8|    zero 
+< Error: Line 8: keyword "end" expected
+---
+>     8|    zero := five * a; 
+> Error: Line 8: symbol on left-hand side of assignment must have a storage mode of VARIABLE

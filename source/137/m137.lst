@@ -1,0 +1,12 @@
+STAGE0:  JohnPaul Flores, Steven Womack  Tue Nov  8 14:16:00 2022
+
+LINE NO.              SOURCE STATEMENT
+
+    1|program stage1no137;
+    2|var
+    3|  a, b, c, d : integer;
+    4|begin
+    5|  read(
+Error: Line 5: keyword "end" expected
+
+COMPILATION TERMINATED      1 ERROR ENCOUNTERED
