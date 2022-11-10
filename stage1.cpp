@@ -924,11 +924,11 @@ void Compiler::code(string op, string operand1 , string operand2 )
     }
     else if( op == "read")
     {
-       emitReadCode(operand1, operand2);
+       emitReadCode(operand1);
     }
     else if(op == "write")
     {
-       emitWriteCode(operand1, operand2);
+       emitWriteCode(operand1);
     }
     else if(op == "+") //bindary +
     {
@@ -940,11 +940,11 @@ void Compiler::code(string op, string operand1 , string operand2 )
     }
     else if( op == "neg") //unary -
     {
-       emitNegationCode(operand1, operand2);
+       emitNegationCode(operand1);
     }
     else if(op == "not")
     {
-       emitNotCode(operand1, operand2);
+       emitNotCode(operand1);
     }
     else if(op == "*")
     {
@@ -1435,6 +1435,7 @@ string Compiler::getTemp()
     return temp;
 }
 
+//need to check with motl wtf this is, this is a guess
 string Compiler::getLabel()
 {
    static int label = 0;
@@ -1446,6 +1447,7 @@ string Compiler::getLabel()
 
 //Note may be incomplete, currently views all temps as existing in the symbol table,
 //may need to worry about a temp that is not in the symbol table
+//also check with motl if this is even correct
 bool Compiler::isTemporary(string s) const // determines if s represents a temporary
 {
    if(symbolTable.find(s) != symbolTable.end())
@@ -1456,12 +1458,53 @@ bool Compiler::isTemporary(string s) const // determines if s represents a tempo
    return false;
 }
 
-/* Hey so somethin to thing about... the data you recieve at this point
-might not be validated, this is actually a thing to worry about if the validation
-should be before this, or right here in the emit code. */
+/* Validation will happen in these*/
 
 void Compiler::emitReadCode(string operand, string operand2)
 {
+   string name = operand;
+   
+    while(name != "")
+    {
+        string tempName;
+        int i = name.find(",");
+        
+        if(name.length() <= 0)
+        {
+           name = "";
+           continue;
+        }
+        
+        if(i < 0 && name.length() > 0)
+        {
+           tempName = name;
+           name = "";
+           
+           if(tempName.length() > 15)
+           {tempName = tempName.substr(0,15);}
+        }
+        
+        if( i > -1)
+        {
+           tempName = name.substr(0,i);
+           name = name.substr(i+1, name.length() - 1);
+           
+           if(tempName.length() > 15)
+           {tempName = tempName.substr(0,15);}
+        }
+        
+        if(symbolTable.find(tempName) == symbolTable.end())
+           processError("reference to undefined symbol");
+        
+        if(symbolTable.at(tempName).getDataType() != INTEGER)
+           processError("can't read variables of this type");
+        
+        if(symbolTable.at(tempName).getMode() != VARIABLE)
+           processError("attempting to read to a read-only location");
+        
+        /**/
+        
+    }
    
 }
 
