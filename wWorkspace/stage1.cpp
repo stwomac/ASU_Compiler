@@ -769,7 +769,22 @@ void Compiler::processError(string err)
      cout << endl << token << endl;;
      //emit("","Exit", "{0}");
    //objectFile << "\n";
+   
+   cout << endl << "operator stack: ";
+   while( !operatorStk.empty())
+   {
+      cout << operatorStk.top() << " ";
+      operatorStk.pop();
+   }
+   
+   cout << endl << "operand stack: ";
     
+    while( !operandStk.empty())
+   {
+      cout << operandStk.top() << " ";
+      operandStk.pop();
+   }
+   cout << endl;
     sourceFile.close();
     listingFile.close();
     objectFile.close();
@@ -1370,21 +1385,28 @@ void Compiler::part()           // stage 1, production 15
 void Compiler::pushOperator(string op)
 {
    operatorStk.push(op);
+   
+   cout << " "<<op<<":" << op << " ";
 }
 
 
 void Compiler::pushOperand(string operand)
 {
+   cout << " " << operand << ":";
    if(isLiteral(operand))
    {
       if(symbolTable.find(operand) == symbolTable.end())
       {
+         cout << endl << "not in symbol table " << endl;
          //note need to ask motl if pushing the operand should be constant or variable
          insert(operand,whichType(operand),CONSTANT,whichValue(operand),YES,1);
       }
-      
-      operandStk.push(operand);
+     
    }
+   
+   operandStk.push(operand);
+      
+   cout << " " << operand << " ";
 }
 
 string Compiler::popOperator()
@@ -1393,6 +1415,8 @@ string Compiler::popOperator()
    {
       string s = operatorStk.top();
       operatorStk.pop();
+      
+      cout << endl << "pop: " << s << endl;
       return s;
    }
    else
@@ -1408,6 +1432,7 @@ string Compiler::popOperand()
    if(!operandStk.empty())
    {
       string s = operandStk.top();
+      cout << endl << "pop: " << s << endl;
       operandStk.pop();
       return s;
    }
@@ -1459,7 +1484,7 @@ bool Compiler::isTemporary(string s) const // determines if s represents a tempo
 {
    if(symbolTable.find(s) != symbolTable.end())
    {
-      if(symbolTable.at(s).getDataType() == UNKNOWN)
+      if(s[0] == 'T')
          return true;
    }
    return false;
@@ -1584,6 +1609,21 @@ void Compiler::emitAdditionCode(string operand1, string operand2)       // op2 +
 {
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
    {processError("illegal type");}
+   
+   if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1 && contentsOfAReg != operand2)
+   {
+      emit("", "mov","[" + symbolTable.at(contentsOfAReg).getInternalName() + "],eax","; deassign AReg");
+      symbolTable.at(contentsOfAReg).setAlloc(YES);
+      contentsOfAReg = "";
+   }
+   
+   if(contentsOfAReg !=operand1 && contentsOfAReg != operand2)
+   {
+      contentsOfAReg = operand2;
+      emit("", "mov", "eax,[" + operand2 + "]","; Areg = " + operand2); 
+   }
+   
+   
    
 }
 
