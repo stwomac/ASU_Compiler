@@ -3,6 +3,7 @@
 //JohnPaul Flores && Steven Womack
 //11/4/2022
 
+/*Womack Edition*/
 
 
 
@@ -1006,7 +1007,7 @@ void Compiler::beginEndStmt()   // stage 0, production 5
      execStmts();
      
      //changing nextToken to token (gonna call next token at end of execStmts
-     if (token() != "end")
+     if (token != "end")
         processError("keyword \"end\" expected");
      
      if (nextToken() != ".")
@@ -1069,15 +1070,15 @@ void Compiler::assignStmt()     // stage 1, production 4
 {
    pushOperand(token);
    
-   if(nextToken() != ":=");
-      processError(":= expected");
+   if(nextToken() != ":=")
+   {processError(":= expected");}
    
    pushOperator(":=");
    
    express();
    
    if(token != ";")
-      processError("; expected");
+   {processError("; expected");}
    
    code(popOperator(), popOperand(), popOperand());
    
@@ -1167,7 +1168,7 @@ void Compiler::expresses()      // stage 1, production 10
       pushOperator(token);
       nextToken();
       term();
-      code(popOperator,popOperand,popOperand);
+      code(popOperator(),popOperand(),popOperand());
       expresses();
    }
    
@@ -1255,7 +1256,7 @@ void Compiler::part()           // stage 1, production 15
          //need to think about how the token comes out of express
          //current expectation is that at the end of a function it will 
          //call next token so we can look at it
-         if(token == ")");
+         if(token == ")")
          {
             //x = not
             code(x, popOperand());
@@ -1296,7 +1297,7 @@ void Compiler::part()           // stage 1, production 15
          
          express();
         
-         if(token() != ")");
+         if(token != ")")
          {
             processError("In Part: Expected ) after express is called");
          }
@@ -1319,7 +1320,7 @@ void Compiler::part()           // stage 1, production 15
          
          express();
         
-         if(token() != ")");
+         if(token != ")")
          {
             processError("In Part: Expected ) after express is called");
          }
@@ -1329,7 +1330,7 @@ void Compiler::part()           // stage 1, production 15
       else if(isInteger(y))
       {
          x += y;
-         pushOperand(z);
+         pushOperand(x);
       }
       else if(isNonKeyId(y))
       {
@@ -1350,7 +1351,7 @@ void Compiler::part()           // stage 1, production 15
    {
       express();
         
-      if(token() != ")");
+      if(token != ")")
       {
          processError("In Part: Expected ) after express is called");
       }
@@ -1374,7 +1375,7 @@ void Compiler::pushOperand(string operand)
 {
    if(isLiteral(operand))
    {
-      if(symbolTable.find(operand) == symbolTable.empty())
+      if(symbolTable.find(operand) == symbolTable.end())
       {
          //note need to ask motl if pushing the operand should be constant or variable
          insert(operand,whichType(operand),CONSTANT,whichValue(operand),YES,1);
@@ -1396,6 +1397,8 @@ string Compiler::popOperator()
    {
       processError("compiler error; operator stack underflow");
    }
+   
+   return "popOperator if issue";
 }
 
 string Compiler::popOperand()
@@ -1410,6 +1413,8 @@ string Compiler::popOperand()
    {
       processError("compiler error; operand stack underflow");
    }
+   
+   return "popOperand if issue";
 }
 
 
@@ -1438,11 +1443,11 @@ string Compiler::getTemp()
 //need to check with motl wtf this is, this is a guess
 string Compiler::getLabel()
 {
-   static int label = 0;
+   static int labelCount = 0;
    
-   string s = "L" + label;
-   label++;
-   return label;
+   string ret = "L" + to_string(labelCount);
+   labelCount++;
+   return ret;
 }
 
 //Note may be incomplete, currently views all temps as existing in the symbol table,
@@ -1452,7 +1457,7 @@ bool Compiler::isTemporary(string s) const // determines if s represents a tempo
 {
    if(symbolTable.find(s) != symbolTable.end())
    {
-      if(symbolTable.at(s).getDataType == UNKNOWN)
+      if(symbolTable.at(s).getDataType() == UNKNOWN)
          return true;
    }
    return false;
@@ -1460,9 +1465,60 @@ bool Compiler::isTemporary(string s) const // determines if s represents a tempo
 
 /* Validation will happen in these*/
 
+
+// operands for read code will be variable names
 void Compiler::emitReadCode(string operand, string operand2)
 {
-   string name = operand;
+    string name = operand;
+   
+    while(name != "")
+    {
+        string tempName;
+        int i = name.find(",");
+        
+        if(name.length() <= 0)
+        {
+           name = "";
+           continue;
+        }
+        
+        if(i < 0 && name.length() > 0)
+        {
+           tempName = name;
+           name = "";
+           
+           if(tempName.length() > 15)
+           {tempName = tempName.substr(0,15);}
+        }
+        
+        if( i > -1)
+        {
+           tempName = name.substr(0,i);
+           name = name.substr(i+1, name.length() - 1);
+           
+           if(tempName.length() > 15)
+           {tempName = tempName.substr(0,15);}
+        }
+        
+        //whichType will handle  undefined constant
+        if(whichType(tempName) != INTEGER)
+           processError("can't read variables of this type");
+        
+        if(symbolTable.at(tempName).getMode() != VARIABLE)
+           processError("attempting to read to a read-only location");
+        
+        /**/
+        
+    }
+   
+}
+
+//operands for write code will be variable names or constant names
+void Compiler::emitWriteCode(string operand, string operand2)
+{
+    string name = operand;
+    
+    //static bool definedStorage = false;
    
     while(name != "")
     {
@@ -1496,100 +1552,120 @@ void Compiler::emitReadCode(string operand, string operand2)
         if(symbolTable.find(tempName) == symbolTable.end())
            processError("reference to undefined symbol");
         
-        if(symbolTable.at(tempName).getDataType() != INTEGER)
-           processError("can't read variables of this type");
-        
-        if(symbolTable.at(tempName).getMode() != VARIABLE)
-           processError("attempting to read to a read-only location");
+        if(symbolTable.at(tempName).getDataType() != INTEGER &&
+           symbolTable.at(tempName).getDataType() != BOOLEAN)
+           processError("INTEGER or BOOLEAN REQUIRED FOR WRITE EMIT");
         
         /**/
         
     }
-   
-}
-
-void Compiler::emitWriteCode(string operand, string operand2)
-{
-   
 }
 
 void Compiler::emitAssignCode(string operand1, string operand2)         // op2 = op1
 {
+    if(symbolTable.find(operand1) == symbolTable.end())
+    {processError("operand1 reference to undefined symbol");}
+        
+    if(symbolTable.find(operand2) == symbolTable.end())
+    {processError("operand2 reference to undefined symbol");}
+        
+    if (whichType(operand1) != whichType(operand2)) //(types of operands are not the same)
+    {processError("incompatible types");}
    
+    if (symbolTable.at(operand2).getMode() != VARIABLE) //storage mode of operand2 is not VARIABLE -> NON_KEY_ID
+    {processError("symbol on left-hand side of assignment must have a storage mode of VARIABLE");}
 }
 
+
+/*Note from here on out operands can be INTEGER, BOOLEANS, OR NON KEY IDS*/
 void Compiler::emitAdditionCode(string operand1, string operand2)       // op2 +  op1
 {
+   if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
+   {processError("illegal type");}
    
 }
 
 void Compiler::emitSubtractionCode(string operand1, string operand2)    // op2 -  op1
 {
-   
+   if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
+   {processError("illegal type");}
 }
 
 void Compiler::emitMultiplicationCode(string operand1, string operand2) // op2 *  op1
 {
-   
+   if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
+   {processError("illegal type");}
 }
 
 void Compiler::emitDivisionCode(string operand1, string operand2)       // op2 /  op1
 {
-   
+   if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
+   {processError("illegal type");}
 }
 
 void Compiler::emitModuloCode(string operand1, string operand2)         // op2 %  op1
 {
-   
+   if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
+   {processError("illegal type");}
 }
 
 void Compiler::emitNegationCode(string operand1, string operand2)           // -op1
 {
-   
+   if(whichType(operand1) != INTEGER) 
+   {processError("illegal type");}
 }
 
 void Compiler::emitNotCode(string operand1, string operand2)                // !op1
 {
-   
+   if(whichType(operand1) != BOOLEAN) 
+   {processError("illegal type");}
 }
 
 void Compiler::emitAndCode(string operand1, string operand2)            // op2 && op1
 {
-   
+   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) 
+   {processError("illegal type");}
 }
 
 void Compiler::emitOrCode(string operand1, string operand2)             // op2 || op1
 {
-   
+   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) 
+   {processError("illegal type");}
 }
 
 void Compiler::emitEqualityCode(string operand1, string operand2)       // op2 == op1
 {
-   
+   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) 
+   {processError("illegal type");}
 }
 
 void Compiler::emitInequalityCode(string operand1, string operand2)     // op2 != op1
 {
-   
+   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) 
+   {processError("illegal type");}
 }
 
 void Compiler::emitLessThanCode(string operand1, string operand2)       // op2 <  op1
 {
-   
+   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) 
+   {processError("illegal type");}
 }
 
 void Compiler::emitLessThanOrEqualToCode(string operand1, string operand2) // op2 <= op1
 {
-   
+   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) 
+   {processError("illegal type");}
 }
 
 void Compiler::emitGreaterThanCode(string operand1, string operand2)    // op2 >  op1
 {
-   
+   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) 
+   {processError("illegal type");}
 }
 
 void Compiler::emitGreaterThanOrEqualToCode(string operand1, string operand2) // op2 >= op1
 {
-   
+   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) 
+   {processError("illegal type");}
 }
 
