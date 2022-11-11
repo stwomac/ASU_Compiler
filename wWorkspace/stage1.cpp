@@ -766,6 +766,7 @@ void Compiler::processError(string err)
     listingFile << "\nError: Line " << lineNo << ": " << err << "\n";
 	 createListingTrailer();
      
+     cout << endl << token << endl;;
      //emit("","Exit", "{0}");
    //objectFile << "\n";
     
@@ -901,6 +902,7 @@ bool Compiler::isSpecialSymbol(char c) const // determines if c is a special sym
         c == '.' ||
         c == '+' ||
         c == '-' ||
+        c == '*' ||
         c == '(' ||
         c == ')' ||
         c == '<' ||
