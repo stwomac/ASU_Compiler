@@ -1738,7 +1738,8 @@ void Compiler::emitEqualityCode(string operand1, string operand2)       // op2 =
       change the allocate entry for it in the symbol table to yes
       deassign it
    }
-	//if the A register holds a non-temp not operand2 nor operand1 then deassign it
+   
+   
    if(!isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2)
       //deassign it
    
