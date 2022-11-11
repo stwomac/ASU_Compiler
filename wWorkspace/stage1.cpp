@@ -1457,7 +1457,7 @@ string Compiler::getTemp()
 {
     string temp;
     currentTempNo++;
-    temp = "T" + currentTempNo;
+    temp = "T" + to_string(currentTempNo);
     
     if(currentTempNo > maxTempNo)
     {
@@ -1620,9 +1620,31 @@ void Compiler::emitAdditionCode(string operand1, string operand2)       // op2 +
    if(contentsOfAReg !=operand1 && contentsOfAReg != operand2)
    {
       contentsOfAReg = operand2;
-      emit("", "mov", "eax,[" + operand2 + "]","; Areg = " + operand2); 
+      emit("", "mov", "eax,[" + symbolTable.at(operand2).getInternalName() + "]","; Areg = " + operand2); 
    }
    
+   /*Emit addition*/
+   if(contentsOfAReg == operand2)
+   {
+      emit("","add","eax,[" + symbolTable.at(operand1).getInternalName() +"]", "; Areg = " + operand2 + " + " + operand1);
+   }
+   else
+   {
+      emit("","add","eax,[" + symbolTable.at(operand2).getInternalName() +"]", "; Areg = " + operand1 + " + " + operand2);
+   }
+   /*Free temps*/
+   if(isTemporary(operand1))
+   {freeTemp();}
+
+   if(isTemporary(operand1))
+   {freeTemp();}
+
+   
+   contentsOfAReg = getTemp();
+   cout << endl << contentsOfAReg << endl;
+   
+   symbolTable.at(contentsOfAReg).setDataType(INTEGER);
+   pushOperand(contentsOfAReg);
    
    
 }
