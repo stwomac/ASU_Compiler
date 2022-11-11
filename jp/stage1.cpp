@@ -1458,7 +1458,7 @@ bool Compiler::isTemporary(string s) const // determines if s represents a tempo
    return false;
 }
 
-/* Validation will happen in these*/
+/* Validation will happen in these*//*----------------------------------------------------------------EMITS START------------------------------------------------*/
 
 void Compiler::emitReadCode(string operand, string operand2)
 {
@@ -1512,13 +1512,13 @@ void Compiler::emitWriteCode(string operand, string operand2)			//WORK IN PROGRE
 {
 	 string name
 	 static bool definedStorage = false
-	 while (name is broken from list (operand) and put in name != "")
+	 while (name is broken from list (operand) and put in name != "") //DO THIS
 	 {
 		 if (!symbolTable.at(name) == symbolTable.end())  //(name is not in symbol table)
 			processError("reference to undefined symbol")
-		 if (name is not in the A register) {
+		 if (contentsOfAReg != name) {
 			emit the code to load name in the A register
-			set the contentsOfAReg = name
+			contentsOfAReg = name;
 		 }
 		 if (SymbolTable.find(name).getDataType() == INTEGER || SymbolTable.find(name).getDataType() == BOOLEAN) //(data type of name is INTEGER or BOOLEAN)
 			emit code to call the Irvine WriteInt function // <- work on this
@@ -1530,155 +1530,402 @@ void Compiler::emitWriteCode(string operand, string operand2)			//WORK IN PROGRE
 void Compiler::emitAssignCode(string operand1, string operand2)         // op2 = op1 -WORK IN PROGRESS
 {
 	if (SymbolTable.find(operand1).getDataType() != SymbolTable.find(operand1).getDataType()) //(types of operands are not the same)
-		processError("incompatible types")
-	if (!isNonKeyId(SymbolTable.find(operand).getMode())) //storage mode of operand2 is not VARIABLE -> NON_KEY_ID
+		processError("incompatible types");
+   
+	if (SymbolTable.find(operand2.getDataType != VARIABLE) //storage mode of operand2 is not VARIABLE -> NON_KEY_ID
 		processError("symbol on left-hand side of assignment must have a storage mode of VARIABLE");
+      
 	if (operand1 == operand2)
-		return
-	//THIS IS ALL THAT NEEDS WORKED ON
-	if operand1 is not in the A register then
-		emit code to load operand1 into the A register
+		return;
+   
+	if (contentsOfAReg != operand1)  //operand1 is not in the A register then
+      emit code to load operand1 into the A register
+      
 	emit code to store the contents of that register into the memory location pointed to by operand2
-	set the contentsOfAReg = operand2
+	contentsOfAReg = operand2; //set the contentsOfAReg = operand2
 	
 	if (operand1 == getTemp()) //if operand1 is a temp then free its name for reuse
 		freeTemp();
 	 //operand2 can never be a temporary since it is to the left of ':='*/
 }
 
-void Compiler::emitAdditionCode(string operand1, string operand2)       // op2 +  op1
+void Compiler::emitAdditionCode(string operand1, string operand2)       // op2 +  op1 -WORK IN PROGRESS
 {
-	/*
-	if type of either operand is not integer
-	 processError(illegal type)
-	 if the A Register holds a temp not operand1 nor operand2 then
-	 emit code to store that temp into memory
-	 change the allocate entry for the temp in the symbol table to yes
-	 deassign it
-	 if the A register holds a non-temp not operand1 nor operand2 then deassign it
-	 if neither operand is in the A register then
-	 emit code to load operand2 into the A register
-	 emit code to perform register-memory addition
-	 deassign all temporaries involved in the addition and free those names for reuse
-	 A Register = next available temporary name and change type of its symbol table entry to integer
-	 push the name of the result onto operandStk */
+	
+	if(!isInteger(operand1) || !isInteger(operand2)) // type of either operand is not integer
+      processError("illegal type")//
+      
+      //the A Register holds a temp not operand1 nor operand2 then
+	if (isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2){
+      emit code to store that temp into memory
+      change the allocate entry for the temp in the symbol table to yes
+      deassign it
+   }
+       
+   //A register holds a non-temp not operand1 nor operand2 then deassign it
+	if (!isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      //deassign a register?
+    
+   //neither operand is in the A register then
+	if (contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      emit code to load operand2 into the A register
+   
+	emit code to perform register-memory addition
+	deassign all temporaries involved in the addition and free those names for reuse
+	A Register = next available temporary name and change type of its symbol table entry to integer
+	push the name of the result onto operandStk 
 }
 
-void Compiler::emitSubtractionCode(string operand1, string operand2)    // op2 -  op1
+void Compiler::emitSubtractionCode(string operand1, string operand2)    // op2 -  op1 -WORK IN PROGRESS
 {
+   if(!isInteger(operand1) || !isInteger(operand2)) // type of either operand is not integer
+      processError("illegal type")//
+      
+      //the A Register holds a temp not operand1 nor operand2 then
+	if (isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2){
+      emit code to store that temp into memory
+      change the allocate entry for the temp in the symbol table to yes
+      deassign it
+   }
+       
+   //A register holds a non-temp not operand1 nor operand2 then deassign it
+	if (!isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      //deassign a register?
+    
+   //neither operand is in the A register then
+	if (contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      emit code to load operand2 into the A register
    
+   //PLEASE LOOK INTO THIS AND COMPARE TO emitAdditionCode SEE IF THIS LOGICALLY MAKES SENSE
+	emit code to perform register-memory subtraction
+	deassign all temporaries involved in the subtraction and free those names for reuse
+	A Register = next available temporary name and change type of its symbol table entry to integer
+	push the name of the result onto operandStk 
 }
 
 void Compiler::emitMultiplicationCode(string operand1, string operand2) // op2 *  op1
 {
+  	if(!isInteger(operand1) || !isInteger(operand2))
+      processError("illegal type")
    
+	//if the A Register holds a temp not operand2 then
+   if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2){
+      emit code to store that temp into memory
+      change the allocate entry for it in the symbol table to yes
+      deassign it
+   }
+   
+	//if the A register holds a non-temp not operand2 then deassign it
+   if(!isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
+      //deassign a register?
+   
+	//if operand2 is not in the A register
+   if(contentsOfAReg != operand2)
+      emit instruction to do a register-memory load of operand2 into the A register
+   
+   //PLEASE LOOK INTO THIS AND COMPARE TO emitDivisionCode SEE IF THIS LOGICALLY MAKES SENSE
+	emit code to extend sign of multiplicand from the A register to edx:eax
+	emit code to perform a register-memory multiplication
+	deassign all temporaries involved and free those names for reuse
+	A Register = next available temporary name and change type of its symbol table entry to integer
+	push the name of the result onto operandStk 
 }
 
 void Compiler::emitDivisionCode(string operand1, string operand2)       // op2 /  op1
 {
-	   /* if type of either operand is not integer
-	 processError(illegal type)
-	 if the A Register holds a temp not operand2 then
-	 emit code to store that temp into memory
-	 change the allocate entry for it in the symbol table to yes
-	 deassign it
-	 if the A register holds a non-temp not operand2 then deassign it
-	 if operand2 is not in the A register
-	 emit instruction to do a register-memory load of operand2 into the A register
-	 emit code to extend sign of dividend from the A register to edx:eax
-	 emit code to perform a register-memory division
-	 deassign all temporaries involved and free those names for reuse
-	 A Register = next available temporary name and change type of its symbol table entry to integer
-	 push the name of the result onto operandStk
-	 */
+	if(!isInteger(operand1) || !isInteger(operand2))
+      processError("illegal type")
+   
+	//if the A Register holds a temp not operand2 then
+   if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2){
+      emit code to store that temp into memory
+      change the allocate entry for it in the symbol table to yes
+      deassign it
+   }
+   
+	//if the A register holds a non-temp not operand2 then deassign it
+   if(!isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
+      //deassign a register?
+   
+	//if operand2 is not in the A register
+   if(contentsOfAReg != operand2)
+      emit instruction to do a register-memory load of operand2 into the A register
+   
+	emit code to extend sign of dividend from the A register to edx:eax
+	emit code to perform a register-memory division
+	deassign all temporaries involved and free those names for reuse
+	A Register = next available temporary name and change type of its symbol table entry to integer
+	push the name of the result onto operandStk
+	 
 }
 
-void Compiler::emitModuloCode(string operand1, string operand2)         // op2 %  op1
+void Compiler::emitModuloCode(string operand1, string operand2)         // op2 %  op1 // honestly need a bit to think how to do remainder
 {
    
 }
 
-void Compiler::emitNegationCode(string operand1, string operand2)           // -op1
+void Compiler::emitNegationCode(string operand1, string operand2)           // -op1 //time to think
 {
    
 }
 
-void Compiler::emitNotCode(string operand1, string operand2)                // !op1
+void Compiler::emitNotCode(string operand1, string operand2)                // !op1 //time to think (is not only booleans? cant remember)
 {
    
 }
 
-void Compiler::emitAndCode(string operand1, string operand2)            // op2 && op1
+void Compiler::emitAndCode(string operand1, string operand2)            // op2 && op1  WORK IN PROGRESS
 {
-		/*
-		if type of either operand is not boolean
-	 processError(illegal type)
-	 if the A Register holds a temp not operand1 nor operand2 then
-	 emit code to store that temp into memory
-	 change the allocate entry for the temp in the symbol table to yes
-	 deassign it
-	 if the A register holds a non-temp not operand1 nor operand2 then deassign it
-	 if neither operand is in the A register then
-	 emit code to load operand2 into the A register
-	 emit code to perform register-memory and
-	 deassign all temporaries involved in the and operation and free those names for reuse
-	 A Register = next available temporary name and change type of its symbol table entry to boolean
-	 push the name of the result onto operandStk
-	 */
+		
+	if(!isBoolean(operand1) || !isBoolean(operand2))
+      processError("illegal type")
+	//if the A Register holds a temp not operand1 nor operand2 then
+   if (isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2){
+      emit code to store that temp into memory
+      change the allocate entry for the temp in the symbol table to yes
+      deassign it
+   }
+	//if the A register holds a non-temp not operand1 nor operand2 then deassign it
+   if(!isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      //deassign register A?
+    
+   //neither operand is in the A register then
+	if(contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      emit code to load operand2 into the A register
+	emit code to perform register-memory and
+	deassign all temporaries involved in the and operation and free those names for reuse
+	A Register = next available temporary name and change type of its symbol table entry to boolean
+	push the name of the result onto operandStk
+	 
 }
 
 void Compiler::emitOrCode(string operand1, string operand2)             // op2 || op1
 {
+		
+	if(!isBoolean(operand1) || !isBoolean(operand2))
+      processError("illegal type")
+	//if the A Register holds a temp not operand1 nor operand2 then
+   if (isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2){
+      emit code to store that temp into memory
+      change the allocate entry for the temp in the symbol table to yes
+      deassign it
+   }
+	//if the A register holds a non-temp not operand1 nor operand2 then deassign it
+   if(!isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      //deassign register A?
+    
+    //neither operand is in the A register then
+	if(contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      emit code to load operand2 into the A register
    
+   //PLEASE LOOK INTO THIS AND COMPARE TO emitAndCode SEE IF THIS LOGICALLY MAKES SENSE
+	emit code to perform register-memory or
+	deassign all temporaries involved in the or operation and free those names for reuse
+	A Register = next available temporary name and change type of its symbol table entry to boolean
+	push the name of the result onto operandStk
 }
 
+
+//--------------------------------------WE NEED TO VERIFY IF THESE ARE SIGNED COMPARISONS (used signed conditional jumps in /* example */ commented code tips--------------------------------------
 void Compiler::emitEqualityCode(string operand1, string operand2)       // op2 == op1
 {
-	   /*if types of operands are not the same
-	 processError(incompatible types)
-	 if the A Register holds a temp not operand1 nor operand2 then
-	 emit code to store that temp into memory
-	 change the allocate entry for it in the symbol table to yes
-	 deassign it
-	 if the A register holds a non-temp not operand2 nor operand1 then deassign it
-	 if neither operand is in the A register then
-	 emit code to load operand2 into the A register
-	 emit code to perform a register-memory compare
-	 emit code to jump if equal to the next available Ln (call getLabel)
-	 emit code to load FALSE into the A register
-	 insert FALSE in symbol table with value 0 and external name false
-	 emit code to perform an unconditional jump to the next label (call getLabel should be L(n+1))
-	 emit code to label the next instruction with the first acquired label Ln
-	 emit code to load TRUE into A register
-	 insert TRUE in symbol table with value -1 and external name true
-	 emit code to label the next instruction with the second acquired label L(n+1)
-	 deassign all temporaries involved and free those names for reuse
-	 A Register = next available temporary name and change type of its symbol table entry to boolean
-	 push the name of the result onto operandStk*/
+	//if types of operands are not the same
+   if(getDataType(operand1) != getDataType(operand2))
+      processError("incompatible types");
+	//if the A Register holds a temp not operand1 nor operand2 then
+   if (isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2){
+      emit code to store that temp into memory
+      change the allocate entry for it in the symbol table to yes
+      deassign it
+   }
+	//if the A register holds a non-temp not operand2 nor operand1 then deassign it
+   if(!isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      //deassign it
+   
+	//if neither operand is in the A register then
+   if(contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      emit code to load operand2 into the A register
+	emit code to perform a register-memory compare
+	emit code to jump if equal /*je*/ to the next available Ln (call getLabel)
+	emit code to load FALSE into the A register
+	insert FALSE in symbol table with value 0 and external name false
+	emit code to perform an unconditional jump to the next label (call getLabel should be L(n+1))
+	emit code to label the next instruction with the first acquired label Ln
+	emit code to load TRUE into A register
+	insert TRUE in symbol table with value -1 and external name true
+	emit code to label the next instruction with the second acquired label L(n+1)
+	deassign all temporaries involved and free those names for reuse
+	A Register = next available temporary name and change type of its symbol table entry to boolean
+	push the name of the result onto operandStk
 }
 
 void Compiler::emitInequalityCode(string operand1, string operand2)     // op2 != op1
 {
+   //if types of operands are not the same
+   if(getDataType(operand1) != getDataType(operand2))
+      processError("incompatible types");
+	//if the A Register holds a temp not operand1 nor operand2 then
+   if (isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2){
+      emit code to store that temp into memory
+      change the allocate entry for it in the symbol table to yes
+      deassign it
+   }
+	//if the A register holds a non-temp not operand2 nor operand1 then deassign it
+   if(!isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      //deassign it
    
+	//if neither operand is in the A register then
+   if(contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      emit code to load operand2 into the A register
+   
+   //taken from emitEqualityCode. PLEASE CHECK THIS MAY DIFFER FROM ORIGIN
+	emit code to perform a register-memory compare
+	emit code to jump if not equal /*jne*/ to the next available Ln (call getLabel)
+	emit code to load FALSE into the A register
+	insert FALSE in symbol table with value 0 and external name false
+	emit code to perform an unconditional jump to the next label (call getLabel should be L(n+1))
+	emit code to label the next instruction with the first acquired label Ln
+	emit code to load TRUE into A register
+	insert TRUE in symbol table with value -1 and external name true
+	emit code to label the next instruction with the second acquired label L(n+1)
+	deassign all temporaries involved and free those names for reuse
+	A Register = next available temporary name and change type of its symbol table entry to boolean
+	push the name of the result onto operandStk
 }
 
 void Compiler::emitLessThanCode(string operand1, string operand2)       // op2 <  op1
 {
+   //if types of operands are not the same
+   if(getDataType(operand1) != getDataType(operand2))
+      processError("incompatible types");
+	//if the A Register holds a temp not operand1 nor operand2 then
+   if (isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2){
+      emit code to store that temp into memory
+      change the allocate entry for it in the symbol table to yes
+      deassign it
+   }
+	//if the A register holds a non-temp not operand2 nor operand1 then deassign it
+   if(!isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      //deassign it
    
+	//if neither operand is in the A register then
+   if(contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      emit code to load operand2 into the A register
+   
+   //taken from emitEqualityCode. PLEASE CHECK THIS MAY DIFFER FROM ORIGIN
+	emit code to perform a register-memory compare
+	emit code to jump if LessThan /*(jl)*/ to the next available Ln (call getLabel)
+	emit code to load FALSE into the A register
+	insert FALSE in symbol table with value 0 and external name false
+	emit code to perform an unconditional jump to the next label (call getLabel should be L(n+1))
+	emit code to label the next instruction with the first acquired label Ln
+	emit code to load TRUE into A register
+	insert TRUE in symbol table with value -1 and external name true
+	emit code to label the next instruction with the second acquired label L(n+1)
+	deassign all temporaries involved and free those names for reuse
+	A Register = next available temporary name and change type of its symbol table entry to boolean
+	push the name of the result onto operandStk
 }
 
 void Compiler::emitLessThanOrEqualToCode(string operand1, string operand2) // op2 <= op1
 {
+   //if types of operands are not the same
+   if(getDataType(operand1) != getDataType(operand2))
+      processError("incompatible types");
+	//if the A Register holds a temp not operand1 nor operand2 then
+   if (isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2){
+      emit code to store that temp into memory
+      change the allocate entry for it in the symbol table to yes
+      deassign it
+   }
+	//if the A register holds a non-temp not operand2 nor operand1 then deassign it
+   if(!isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      //deassign it
    
+	//if neither operand is in the A register then
+   if(contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      emit code to load operand2 into the A register
+   
+   //taken from emitEqualityCode. PLEASE CHECK THIS MAY DIFFER FROM ORIGIN
+	emit code to perform a register-memory compare
+	emit code to jump if LessThanOrEqual /*(jle)*/ to the next available Ln (call getLabel)
+	emit code to load FALSE into the A register
+	insert FALSE in symbol table with value 0 and external name false
+	emit code to perform an unconditional jump to the next label (call getLabel should be L(n+1))
+	emit code to label the next instruction with the first acquired label Ln
+	emit code to load TRUE into A register
+	insert TRUE in symbol table with value -1 and external name true
+	emit code to label the next instruction with the second acquired label L(n+1)
+	deassign all temporaries involved and free those names for reuse
+	A Register = next available temporary name and change type of its symbol table entry to boolean
+	push the name of the result onto operandStk
 }
 
 void Compiler::emitGreaterThanCode(string operand1, string operand2)    // op2 >  op1
 {
+   //if types of operands are not the same
+   if(getDataType(operand1) != getDataType(operand2))
+      processError("incompatible types");
+	//if the A Register holds a temp not operand1 nor operand2 then
+   if (isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2){
+      emit code to store that temp into memory
+      change the allocate entry for it in the symbol table to yes
+      deassign it
+   }
+	//if the A register holds a non-temp not operand2 nor operand1 then deassign it
+   if(!isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      //deassign it
    
+	//if neither operand is in the A register then
+   if(contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      emit code to load operand2 into the A register
+   
+   //taken from emitEqualityCode. PLEASE CHECK THIS MAY DIFFER FROM ORIGIN
+	emit code to perform a register-memory compare
+	emit code to jump if GreaterThan /*(jg)*/ to the next available Ln (call getLabel)
+	emit code to load FALSE into the A register
+	insert FALSE in symbol table with value 0 and external name false
+	emit code to perform an unconditional jump to the next label (call getLabel should be L(n+1))
+	emit code to label the next instruction with the first acquired label Ln
+	emit code to load TRUE into A register
+	insert TRUE in symbol table with value -1 and external name true
+	emit code to label the next instruction with the second acquired label L(n+1)
+	deassign all temporaries involved and free those names for reuse
+	A Register = next available temporary name and change type of its symbol table entry to boolean
+	push the name of the result onto operandStk
 }
 
 void Compiler::emitGreaterThanOrEqualToCode(string operand1, string operand2) // op2 >= op1
 {
+   //if types of operands are not the same
+   if(getDataType(operand1) != getDataType(operand2))
+      processError("incompatible types");
+	//if the A Register holds a temp not operand1 nor operand2 then
+   if (isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2){
+      emit code to store that temp into memory
+      change the allocate entry for it in the symbol table to yes
+      deassign it
+   }
+	//if the A register holds a non-temp not operand2 nor operand1 then deassign it
+   if(!isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      //deassign it
    
+	//if neither operand is in the A register then
+   if(contentsOfAReg != operand1 && contentsOfAReg != operand2)
+      emit code to load operand2 into the A register
+   
+   //taken from emitEqualityCode. PLEASE CHECK THIS MAY DIFFER FROM ORIGIN
+	emit code to perform a register-memory compare
+	emit code to jump if GreaterThanOrEqual /*(jge)*/ to the next available Ln (call getLabel)
+	emit code to load FALSE into the A register
+	insert FALSE in symbol table with value 0 and external name false
+	emit code to perform an unconditional jump to the next label (call getLabel should be L(n+1))
+	emit code to label the next instruction with the first acquired label Ln
+	emit code to load TRUE into A register
+	insert TRUE in symbol table with value -1 and external name true
+	emit code to label the next instruction with the second acquired label L(n+1)
+	deassign all temporaries involved and free those names for reuse
+	A Register = next available temporary name and change type of its symbol table entry to boolean
+	push the name of the result onto operandStk
 }
 
