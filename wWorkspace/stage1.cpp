@@ -1635,7 +1635,8 @@ void Compiler::emitAssignCode(string operand1, string operand2)         // op2 =
     
     contentsOfAReg = operand2;
     
-    
+    if(isTemporary(operand1))
+    {freeTemp();}
 }
 
 
@@ -1693,6 +1694,33 @@ void Compiler::emitSubtractionCode(string operand1, string operand2)    // op2 -
 {
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
    {processError("illegal type");}
+   
+   if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
+   {
+      emit("", "mov","[" + symbolTable.at(contentsOfAReg).getInternalName() + "],eax","; deassign AReg");
+      symbolTable.at(contentsOfAReg).setAlloc(YES);
+      contentsOfAReg = "";
+   }
+   
+   if(contentsOfAReg != operand2)
+   {
+      contentsOfAReg = operand2;
+      emit("", "mov", "eax,[" + symbolTable.at(operand2).getInternalName() + "]","; AReg = " + operand2); 
+   }
+   
+   emit("", "sub", "eax,[" + symbolTable.at(operand1).getInternalName() + "]", "; AReg = " + operand2 + " - " + operand1);
+   
+   if(isTemporary(operand1))
+   {freeTemp();}
+
+   if(isTemporary(operand2))
+   {freeTemp();}
+
+   contentsOfAReg = getTemp();
+   
+   
+   symbolTable.at(contentsOfAReg).setDataType(INTEGER);
+   pushOperand(contentsOfAReg);
 }
 
 void Compiler::emitMultiplicationCode(string operand1, string operand2) // op2 *  op1
@@ -1750,6 +1778,36 @@ void Compiler::emitModuloCode(string operand1, string operand2)         // op2 %
 {
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
    {processError("illegal type");}
+   
+   if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
+   {
+      emit("", "mov","[" + symbolTable.at(contentsOfAReg).getInternalName() + "],eax","; deassign AReg");
+      symbolTable.at(contentsOfAReg).setAlloc(YES);
+      contentsOfAReg = "";
+   }
+   
+   if(contentsOfAReg != operand2)
+   {
+      contentsOfAReg = operand2;
+      emit("", "mov", "eax,[" + symbolTable.at(operand2).getInternalName() + "]","; AReg = " + operand2); 
+   }
+   
+   emit("", "cdq", "", "; sign extend dividend from eax to edx:eax");
+   emit("", "idiv", "dword [" + symbolTable.at(operand1).getInternalName() + "]", "; AReg = " + operand2 + " div " + operand1);
+   emit("", "xchg", "eax,edx", "; exchange quotient and remainder");
+   
+   if(isTemporary(operand1))
+   {freeTemp();}
+
+   if(isTemporary(operand2))
+   {freeTemp();}
+
+   contentsOfAReg = getTemp();
+   
+   
+   symbolTable.at(contentsOfAReg).setDataType(INTEGER);
+   pushOperand(contentsOfAReg);
+   
 }
 
 void Compiler::emitNegationCode(string operand1, string operand2)           // -op1
