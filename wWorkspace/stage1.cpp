@@ -36,7 +36,7 @@ Compiler::~Compiler()           // destructor
 void Compiler::createListingHeader()
 {
     time_t now = time (NULL);
-    listingFile << "STAGE0:  " << "JohnPaul Flores, Steven Womack  " << ctime(&now) << "\n";
+    listingFile << "STAGE1:  " << "JohnPaul Flores, Steven Womack  " << ctime(&now) << "\n";
     listingFile << "LINE NO." << setw(30) << right << "SOURCE STATEMENT" << left << "\n\n" << right;
     //line numbers and source statements should be aligned under the headings 
 }
@@ -532,8 +532,21 @@ void Compiler::insert(string externalName, storeTypes inType, modes inMode, stri
           
           if(isupper(tempName[0]))
           {
-             SymbolTableEntry s(tempName, inType, inMode, inValue, inAlloc, inUnits);
-             symbolTable.emplace(tempName,s);
+             if(tempName == "FALSE" )
+             {
+                SymbolTableEntry s(tempName, inType, inMode, inValue, inAlloc, inUnits);
+                symbolTable.emplace("false",s);
+             }
+             else if(tempName == "TRUE")
+             {
+                SymbolTableEntry s(tempName, inType, inMode, inValue, inAlloc, inUnits);
+                symbolTable.emplace("true",s);
+             }
+             else
+             {
+                SymbolTableEntry s(tempName, inType, inMode, inValue, inAlloc, inUnits);
+                symbolTable.emplace(tempName,s);
+             }
           }
           else
           {
@@ -1479,7 +1492,7 @@ string Compiler::getLabel()
 {
    static int labelCount = 0;
    
-   string ret = "L" + to_string(labelCount);
+   string ret = ".L" + to_string(labelCount);
    labelCount++;
    return ret;
 }
@@ -1555,7 +1568,7 @@ void Compiler::emitWriteCode(string operand, string operand2)
 {
     string name = operand;
     
-    //static bool definedStorage = false;
+    static bool definedStorage = false;
    
     while(name != "")
     {
@@ -1599,8 +1612,40 @@ void Compiler::emitWriteCode(string operand, string operand2)
            contentsOfAReg = tempName;
         }
         
-        emit("", "call", "WriteInt", "; write int in eax to standard out");
-        emit("", "call", "Crlf", "; write \\r\\n to standard out");
+        //refrencing data set 15 for this
+        if(symbolTable.at(tempName).getDataType() == INTEGER)
+        {
+           emit("", "call", "WriteInt", "; write int in eax to standard out");
+           emit("", "call", "Crlf", "; write \\r\\n to standard out");
+        }
+        else
+        {
+           string labelOne = getLabel(), labelTwo = getLabel();
+           emit("", "cmp", "eax,0", "; compare to 0");
+           emit("", "je", labelOne, "; jump if equal to print FALSE");
+           emit("", "mov", "edx,TRUELIT", "; load address of TRUE literal in edx");
+           emit("", "jmp", labelTwo, "; unconditionally jump to " + labelTwo);
+           
+           emit(labelOne + ":", "", "", "");
+           emit("", "mov", "edx,FALSLIT", "; load address of FALSE literal in edx");
+           
+           emit(labelTwo + ":", "", "", "");
+           emit("", "call", "WriteString", "; write string to standard out");
+           
+           if(!definedStorage)
+           {
+              emit("\nSECTION", ".data");
+              
+              emit("TRUELIT", "db", "'TRUE',0", "; literal string TRUE");
+              emit("FALSLIT", "db", "'FALSE',0", "; literal string FALSE");
+              
+              emit("\nSECTION", ".text");
+              
+              definedStorage = true;
+              
+           }
+           
+        }
         /**/
         
     }
@@ -1638,7 +1683,6 @@ void Compiler::emitAssignCode(string operand1, string operand2)         // op2 =
     if(isTemporary(operand1))
     {freeTemp();}
 }
-
 
 /*Note from here on out operands can be INTEGER, BOOLEANS, OR NON KEY IDS*/
 void Compiler::emitAdditionCode(string operand1, string operand2)       // op2 +  op1
@@ -1860,8 +1904,49 @@ void Compiler::emitLessThanOrEqualToCode(string operand1, string operand2) // op
 
 void Compiler::emitGreaterThanCode(string operand1, string operand2)    // op2 >  op1
 {
-   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) 
+   if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
    {processError("illegal type");}
+   
+   if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
+   {
+      emit("", "mov","[" + symbolTable.at(contentsOfAReg).getInternalName() + "],eax","; deassign AReg");
+      symbolTable.at(contentsOfAReg).setAlloc(YES);
+      contentsOfAReg = "";
+   }
+   
+   if(contentsOfAReg != operand2)
+   {
+      contentsOfAReg = operand2;
+      emit("", "mov", "eax,[" + symbolTable.at(operand2).getInternalName() + "]","; AReg = " + operand2); 
+   }
+   
+   string labelOne = getLabel(), labelTwo = getLabel();
+   emit("", "cmp", "eax,[" + symbolTable.at(operand1).getInternalName() + "]", "; compare " +operand2 + " and " + operand1);
+   emit("", "jg", labelOne, "; if " + operand2 + " > " + operand1 + " then jump to set eax to TRUE");
+   emit("", "mov", "eax,[FALSE]", "; else set eax to FALSE");
+   emit("", "jmp", labelTwo, "; unconditionally jump");
+   
+   emit(labelOne + ":", "", "", "");
+   emit("", "mov", "eax,[TRUE]", "; set eax to TRUE");
+   
+   emit(labelTwo + ":", "", "", "");
+   
+   insert("TRUE", BOOLEAN, CONSTANT, "-1", YES, 1);
+   insert("FALSE", BOOLEAN, CONSTANT, "0", YES, 1);
+   
+   if(isTemporary(operand1))
+   {freeTemp();}
+
+   if(isTemporary(operand2))
+   {freeTemp();}
+
+   contentsOfAReg = getTemp();
+   
+   
+   symbolTable.at(contentsOfAReg).setDataType(BOOLEAN);
+   pushOperand(contentsOfAReg);
+
+
 }
 
 void Compiler::emitGreaterThanOrEqualToCode(string operand1, string operand2) // op2 >= op1
