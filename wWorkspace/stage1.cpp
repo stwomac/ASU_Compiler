@@ -567,11 +567,11 @@ storeTypes Compiler::whichType(string name) // tells which data type a name has
         {
             dataType = symbolTable.at(name).getDataType();
         }
-		else
-		{
-         //cout << endl << name  << endl;
-			processError("reference to undefined constant");
-		}
+        else
+        {
+           //cout << endl << name  << endl;
+           processError("reference to undefined symbol");
+        }
     }
 	
 	 return dataType;
@@ -766,10 +766,9 @@ void Compiler::processError(string err)
     listingFile << "\nError: Line " << lineNo << ": " << err << "\n";
 	 createListingTrailer();
      
-     cout << endl << token << endl;;
-     //emit("","Exit", "{0}");
-   //objectFile << "\n";
-   
+     
+     
+   /*
    cout << endl << "operator stack: ";
    while( !operatorStk.empty())
    {
@@ -784,7 +783,11 @@ void Compiler::processError(string err)
       cout << operandStk.top() << " ";
       operandStk.pop();
    }
+   
+   
    cout << endl;
+   
+   */
     sourceFile.close();
     listingFile.close();
     objectFile.close();
@@ -950,7 +953,7 @@ void Compiler::code(string op, string operand1 , string operand2 )
     }
     else if(op == "+") //bindary +
     {
-		cout << endl << "in code op1 op2 "<< operand1 << " " << operand2 << endl;
+		
        emitAdditionCode(operand1, operand2);
     }
     else if(op == "-") //binary -
@@ -1040,12 +1043,12 @@ void Compiler::execStmts()      // stage 1, production 2
 {
    nextToken();
    
-   cout << "\nexecStmts token : "<< token << endl;
+   
    if(isNonKeyId(token)    || 
       token == "read"      ||
       token == "write")
    {
-	   cout << "\nexecStmts token : "<< token << isNonKeyId(token)<<  endl;
+	   
       execStmt();
  
       execStmts();
@@ -1220,24 +1223,7 @@ void Compiler::terms()          // stage 1, production 12
       nextToken();
       factor();
 	  
-	  /*FIXME
-	  cout << "terms stk\n";
-	  while( !operatorStk.empty())
-   {
-      cout << operatorStk.top() << " ";
-      operatorStk.pop();
-   }
-   
-   cout << endl << "operand stack: ";
-    
-    while( !operandStk.empty())
-   {
-      cout << operandStk.top() << " ";
-      operandStk.pop();
-   }
-	  */
-	  
-	  string op = popOperator(), op1 = popOperand(), op2 = popOperand();
+	   string op = popOperator(), op1 = popOperand(), op2 = popOperand();
       code(op,op1,op2);
       terms();
    }
@@ -1408,17 +1394,16 @@ void Compiler::pushOperator(string op)
 {
    operatorStk.push(op);
    
-   cout << " "<<op<<":" << op << " ";
 }
 
 void Compiler::pushOperand(string operand)
 {
-   cout << " " << operand << ":";
+   
    if(isLiteral(operand))
    {
       if(symbolTable.find(operand) == symbolTable.end())
       {
-         cout << endl << "not in symbol table " << endl;
+        
          //note need to ask motl if pushing the operand should be constant or variable
          insert(operand,whichType(operand),CONSTANT,whichValue(operand),YES,1);
       }
@@ -1427,7 +1412,7 @@ void Compiler::pushOperand(string operand)
    
    operandStk.push(operand);
       
-   cout << " " << operand << " ";
+   
 }
 
 string Compiler::popOperator()
@@ -1437,7 +1422,7 @@ string Compiler::popOperator()
       string s = operatorStk.top();
       operatorStk.pop();
       
-      cout << endl << "pop: " << s << endl;
+      ;
       return s;
    }
    else
@@ -1453,7 +1438,7 @@ string Compiler::popOperand()
    if(!operandStk.empty())
    {
       string s = operandStk.top();
-      cout << endl << "pop: " << s << endl;
+      
       operandStk.pop();
       return s;
    }
@@ -1554,7 +1539,10 @@ void Compiler::emitReadCode(string operand, string operand2)
         if(symbolTable.at(tempName).getMode() != VARIABLE)
            processError("attempting to read to a read-only location");
         
-        /**/
+        /*emits*/
+        emit("","call", "ReadInt", "; read int; value placed in eax");
+        emit("","mov", "[" + symbolTable.at(tempName).getInternalName() + "],eax", "; store eax at " + tempName);
+        contentsOfAReg = tempName;
         
     }
    
@@ -1627,8 +1615,7 @@ void Compiler::emitAssignCode(string operand1, string operand2)         // op2 =
 /*Note from here on out operands can be INTEGER, BOOLEANS, OR NON KEY IDS*/
 void Compiler::emitAdditionCode(string operand1, string operand2)       // op2 +  op1
 {
-	cout << "\nop1: " << operand1 << "\top2: " << operand2 << "\tcontents of eax: " << 
-      contentsOfAReg << endl;
+	
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
    {processError("illegal type");}
    
@@ -1663,7 +1650,7 @@ void Compiler::emitAdditionCode(string operand1, string operand2)       // op2 +
 
    
    contentsOfAReg = getTemp();
-   cout << endl << contentsOfAReg << endl;
+   
    
    symbolTable.at(contentsOfAReg).setDataType(INTEGER);
    pushOperand(contentsOfAReg);
@@ -1713,7 +1700,7 @@ void Compiler::emitMultiplicationCode(string operand1, string operand2) // op2 *
 
    
    contentsOfAReg = getTemp();
-   cout << endl << contentsOfAReg << endl;
+   
    
    symbolTable.at(contentsOfAReg).setDataType(INTEGER);
    pushOperand(contentsOfAReg);
