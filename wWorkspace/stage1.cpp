@@ -1752,7 +1752,7 @@ void Compiler::emitAdditionCode(string operand1, string operand2)       // op2 +
 void Compiler::emitSubtractionCode(string operand1, string operand2)    // op2 -  op1
 {
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
-   {processError("illegal type");}
+   {processError("binary '-' requires integer operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
    {
@@ -1786,7 +1786,7 @@ void Compiler::emitMultiplicationCode(string operand1, string operand2) // op2 *
 {
    
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
-   {processError("illegal type");}
+   {processError("binary '*' requires integer operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2)
    {
@@ -1830,7 +1830,7 @@ void Compiler::emitMultiplicationCode(string operand1, string operand2) // op2 *
 void Compiler::emitDivisionCode(string operand1, string operand2)       // op2 /  op1
 {
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
-   {processError("illegal type");}
+   {processError("binary 'div' requires integer operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
    {
@@ -1864,7 +1864,7 @@ void Compiler::emitDivisionCode(string operand1, string operand2)       // op2 /
 void Compiler::emitModuloCode(string operand1, string operand2)         // op2 %  op1
 {
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
-   {processError("illegal type");}
+   {processError("binary 'mod' requires integer operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
    {
@@ -1900,7 +1900,7 @@ void Compiler::emitModuloCode(string operand1, string operand2)         // op2 %
 void Compiler::emitNegationCode(string operand1, string operand2)           // -op1
 {
    if(whichType(operand1) != INTEGER) // type of either operand is not integer
-   {processError("illegal type");}
+   {processError("binary 'neg' requires integer operand");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1)
    {
@@ -1932,7 +1932,7 @@ void Compiler::emitNegationCode(string operand1, string operand2)           // -
 void Compiler::emitNotCode(string operand1, string operand2)                // !op1
 {
    if(whichType(operand1) != BOOLEAN) // type of either operand is not integer
-   {processError("illegal type");}
+   {processError("logical 'not' requires boolean operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1)
    {
@@ -2006,7 +2006,7 @@ void Compiler::emitAndCode(string operand1, string operand2)            // op2 &
 void Compiler::emitOrCode(string operand1, string operand2)             // op2 || op1
 {
    if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) // type of either operand is not integer
-   {processError("binary '+' requires integer operands");}
+   {processError("logical 'or' requires boolean operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1 && contentsOfAReg != operand2)
    {
@@ -2048,7 +2048,7 @@ void Compiler::emitOrCode(string operand1, string operand2)             // op2 |
 void Compiler::emitEqualityCode(string operand1, string operand2)       // op2 == op1
 {
    if(whichType(operand1) != whichType(operand2)) // type of either operand is not integer
-   {processError("binary '+' requires integer operands");}
+   {processError("relational '=' requires the same typed operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1 && contentsOfAReg != operand2)
    {
@@ -2107,7 +2107,7 @@ void Compiler::emitEqualityCode(string operand1, string operand2)       // op2 =
 void Compiler::emitInequalityCode(string operand1, string operand2)     // op2 != op1
 {
    if(whichType(operand1) != whichType(operand2)) // type of either operand is not integer
-   {processError("binary '+' requires integer operands");}
+   {processError("relational '<>' requires the same type operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1 && contentsOfAReg != operand2)
    {
@@ -2166,7 +2166,7 @@ void Compiler::emitInequalityCode(string operand1, string operand2)     // op2 !
 void Compiler::emitLessThanCode(string operand1, string operand2)       // op2 <  op1
 {
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
-   {processError("illegal type");}
+   {processError("relational '<' requires integer operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
    {
@@ -2214,7 +2214,7 @@ void Compiler::emitLessThanCode(string operand1, string operand2)       // op2 <
 void Compiler::emitLessThanOrEqualToCode(string operand1, string operand2) // op2 <= op1
 {
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
-   {processError("illegal type");}
+   {processError("relational '<=' requires integer operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
    {
@@ -2262,7 +2262,7 @@ void Compiler::emitLessThanOrEqualToCode(string operand1, string operand2) // op
 void Compiler::emitGreaterThanCode(string operand1, string operand2)    // op2 >  op1
 {
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
-   {processError("illegal type");}
+   {processError("relational '>' requires integer operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
    {
@@ -2312,7 +2312,7 @@ void Compiler::emitGreaterThanCode(string operand1, string operand2)    // op2 >
 void Compiler::emitGreaterThanOrEqualToCode(string operand1, string operand2) // op2 >= op1
 {
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
-   {processError("illegal type");}
+   {processError("relational '>=' requires integer operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
    {
