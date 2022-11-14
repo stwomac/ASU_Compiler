@@ -516,14 +516,13 @@ void Compiler::insert(string externalName, storeTypes inType, modes inMode, stri
           {tempName = tempName.substr(0,15);}
        }
        
-       
        if(symbolTable.find(tempName) != symbolTable.end())
        { 
           string err = "symbol " + tempName + " is multiply defined";
           processError(err); 
           
        }
-       else if(isKeyword(tempName) && tempName != "true" && tempName != "false")
+       else if(isKeyword(tempName))
        { processError("illegal use of keyword");}
        else if(symbolTable.size() > 255)
        { processError("symbolTable is over maximum size");}
@@ -1417,11 +1416,26 @@ void Compiler::pushOperand(string operand)
    
    if(isLiteral(operand))
    {
+      
+      
       if(symbolTable.find(operand) == symbolTable.end())
       {
         
-         //note need to ask motl if pushing the operand should be constant or variable
-         insert(operand,whichType(operand),CONSTANT,whichValue(operand),YES,1);
+        if(operand == "true")
+        {
+           insert("TRUE", BOOLEAN, CONSTANT, "-1", YES, 1);
+        }
+        else if(operand == "false")
+        {
+           insert("FALSE", BOOLEAN, CONSTANT, "0", YES, 1);
+        }
+        else
+        {
+           //note need to ask motl if pushing the operand should be constant or variable
+            insert(operand,whichType(operand),CONSTANT,whichValue(operand),YES,1);
+        }
+         
+         
       }
      
    }
@@ -1950,7 +1964,7 @@ void Compiler::emitNotCode(string operand1, string operand2)                // !
 void Compiler::emitAndCode(string operand1, string operand2)            // op2 && op1
 {
    if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) // type of either operand is not integer
-   {processError("binary '+' requires integer operands");}
+   {processError("binary 'and' requires boolean operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1 && contentsOfAReg != operand2)
    {
@@ -2033,26 +2047,216 @@ void Compiler::emitOrCode(string operand1, string operand2)             // op2 |
 
 void Compiler::emitEqualityCode(string operand1, string operand2)       // op2 == op1
 {
-   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) 
-   {processError("illegal type");}
+   if(whichType(operand1) != whichType(operand2)) // type of either operand is not integer
+   {processError("binary '+' requires integer operands");}
+   
+   if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1 && contentsOfAReg != operand2)
+   {
+      emit("", "mov","[" + symbolTable.at(contentsOfAReg).getInternalName() + "],eax","; deassign AReg");
+      symbolTable.at(contentsOfAReg).setAlloc(YES);
+      contentsOfAReg = "";
+   }
+   
+   if(contentsOfAReg !=operand1 && contentsOfAReg != operand2)
+   {
+      contentsOfAReg = operand2;
+      emit("", "mov", "eax,[" + symbolTable.at(operand2).getInternalName() + "]","; AReg = " + operand2); 
+   }
+   
+   /*Emit and*/
+   string labelOne = getLabel(), labelTwo = getLabel();
+   if(contentsOfAReg == operand2)
+   {
+      emit("", "cmp", "eax,[" + symbolTable.at(operand1).getInternalName() + "]", "; compare " +operand2 + " and " + operand1);
+      emit("", "je", labelOne, "; if " + operand2 + " = " + operand1 + " then jump to set eax to TRUE");
+      emit("", "mov", "eax,[FALSE]", "; else set eax to FALSE");
+      emit("", "jmp", labelTwo, "; unconditionally jump");
+      
+      emit(labelOne + ":", "", "", "");
+      emit("", "mov", "eax,[TRUE]", "; set eax to TRUE");
+      
+      emit(labelTwo + ":", "", "", "");
+   }
+   else
+   {
+      emit("", "cmp", "eax,[" + symbolTable.at(operand2).getInternalName() + "]", "; compare " +operand1 + " and " + operand2);
+      emit("", "je", labelOne, "; if " + operand1 + " = " + operand2 + " then jump to set eax to TRUE");
+      emit("", "mov", "eax,[FALSE]", "; else set eax to FALSE");
+      emit("", "jmp", labelTwo, "; unconditionally jump");
+      
+      emit(labelOne + ":", "", "", "");
+      emit("", "mov", "eax,[TRUE]", "; set eax to TRUE");
+      
+      emit(labelTwo + ":", "", "", "");
+   }
+   /*Free temps*/
+   if(isTemporary(operand1))
+   {freeTemp();}
+
+   if(isTemporary(operand2))
+   {freeTemp();}
+
+   
+   contentsOfAReg = getTemp();
+   
+   
+   symbolTable.at(contentsOfAReg).setDataType(BOOLEAN);
+   pushOperand(contentsOfAReg);
 }
 
 void Compiler::emitInequalityCode(string operand1, string operand2)     // op2 != op1
 {
-   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) 
-   {processError("illegal type");}
+   if(whichType(operand1) != whichType(operand2)) // type of either operand is not integer
+   {processError("binary '+' requires integer operands");}
+   
+   if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1 && contentsOfAReg != operand2)
+   {
+      emit("", "mov","[" + symbolTable.at(contentsOfAReg).getInternalName() + "],eax","; deassign AReg");
+      symbolTable.at(contentsOfAReg).setAlloc(YES);
+      contentsOfAReg = "";
+   }
+   
+   if(contentsOfAReg !=operand1 && contentsOfAReg != operand2)
+   {
+      contentsOfAReg = operand2;
+      emit("", "mov", "eax,[" + symbolTable.at(operand2).getInternalName() + "]","; AReg = " + operand2); 
+   }
+   
+   /*Emit and*/
+   string labelOne = getLabel(), labelTwo = getLabel();
+   if(contentsOfAReg == operand2)
+   {
+      emit("", "cmp", "eax,[" + symbolTable.at(operand1).getInternalName() + "]", "; compare " +operand2 + " and " + operand1);
+      emit("", "jne", labelOne, "; if " + operand2 + " <> " + operand1 + " then jump to set eax to TRUE");
+      emit("", "mov", "eax,[FALSE]", "; else set eax to FALSE");
+      emit("", "jmp", labelTwo, "; unconditionally jump");
+      
+      emit(labelOne + ":", "", "", "");
+      emit("", "mov", "eax,[TRUE]", "; set eax to TRUE");
+      
+      emit(labelTwo + ":", "", "", "");
+   }
+   else
+   {
+      emit("", "cmp", "eax,[" + symbolTable.at(operand2).getInternalName() + "]", "; compare " +operand1 + " and " + operand2);
+      emit("", "jne", labelOne, "; if " + operand1 + " <> " + operand2 + " then jump to set eax to TRUE");
+      emit("", "mov", "eax,[FALSE]", "; else set eax to FALSE");
+      emit("", "jmp", labelTwo, "; unconditionally jump");
+      
+      emit(labelOne + ":", "", "", "");
+      emit("", "mov", "eax,[TRUE]", "; set eax to TRUE");
+      
+      emit(labelTwo + ":", "", "", "");
+   }
+   /*Free temps*/
+   if(isTemporary(operand1))
+   {freeTemp();}
+
+   if(isTemporary(operand2))
+   {freeTemp();}
+
+   
+   contentsOfAReg = getTemp();
+   
+   
+   symbolTable.at(contentsOfAReg).setDataType(BOOLEAN);
+   pushOperand(contentsOfAReg);
 }
 
 void Compiler::emitLessThanCode(string operand1, string operand2)       // op2 <  op1
 {
-   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) 
+   if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
    {processError("illegal type");}
+   
+   if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
+   {
+      emit("", "mov","[" + symbolTable.at(contentsOfAReg).getInternalName() + "],eax","; deassign AReg");
+      symbolTable.at(contentsOfAReg).setAlloc(YES);
+      contentsOfAReg = "";
+   }
+   
+   if(contentsOfAReg != operand2)
+   {
+      contentsOfAReg = operand2;
+      emit("", "mov", "eax,[" + symbolTable.at(operand2).getInternalName() + "]","; AReg = " + operand2); 
+   }
+   
+   string labelOne = getLabel(), labelTwo = getLabel();
+   emit("", "cmp", "eax,[" + symbolTable.at(operand1).getInternalName() + "]", "; compare " +operand2 + " and " + operand1);
+   emit("", "jl", labelOne, "; if " + operand2 + " < " + operand1 + " then jump to set eax to TRUE");
+   emit("", "mov", "eax,[FALSE]", "; else set eax to FALSE");
+   emit("", "jmp", labelTwo, "; unconditionally jump");
+   
+   emit(labelOne + ":", "", "", "");
+   emit("", "mov", "eax,[TRUE]", "; set eax to TRUE");
+   
+   emit(labelTwo + ":", "", "", "");
+   
+   if(symbolTable.find("true") == symbolTable.end())
+      insert("TRUE", BOOLEAN, CONSTANT, "-1", YES, 1);
+
+   if(symbolTable.find("false") == symbolTable.end())
+      insert("FALSE", BOOLEAN, CONSTANT, "0", YES, 1);
+   
+   if(isTemporary(operand1))
+   {freeTemp();}
+
+   if(isTemporary(operand2))
+   {freeTemp();}
+
+   contentsOfAReg = getTemp();
+   
+   
+   symbolTable.at(contentsOfAReg).setDataType(BOOLEAN);
+   pushOperand(contentsOfAReg);
 }
 
 void Compiler::emitLessThanOrEqualToCode(string operand1, string operand2) // op2 <= op1
 {
-   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) 
+   if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
    {processError("illegal type");}
+   
+   if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
+   {
+      emit("", "mov","[" + symbolTable.at(contentsOfAReg).getInternalName() + "],eax","; deassign AReg");
+      symbolTable.at(contentsOfAReg).setAlloc(YES);
+      contentsOfAReg = "";
+   }
+   
+   if(contentsOfAReg != operand2)
+   {
+      contentsOfAReg = operand2;
+      emit("", "mov", "eax,[" + symbolTable.at(operand2).getInternalName() + "]","; AReg = " + operand2); 
+   }
+   
+   string labelOne = getLabel(), labelTwo = getLabel();
+   emit("", "cmp", "eax,[" + symbolTable.at(operand1).getInternalName() + "]", "; compare " +operand2 + " and " + operand1);
+   emit("", "jle", labelOne, "; if " + operand2 + " <= " + operand1 + " then jump to set eax to TRUE");
+   emit("", "mov", "eax,[FALSE]", "; else set eax to FALSE");
+   emit("", "jmp", labelTwo, "; unconditionally jump");
+   
+   emit(labelOne + ":", "", "", "");
+   emit("", "mov", "eax,[TRUE]", "; set eax to TRUE");
+   
+   emit(labelTwo + ":", "", "", "");
+   
+   if(symbolTable.find("true") == symbolTable.end())
+      insert("TRUE", BOOLEAN, CONSTANT, "-1", YES, 1);
+
+   if(symbolTable.find("false") == symbolTable.end())
+      insert("FALSE", BOOLEAN, CONSTANT, "0", YES, 1);
+   
+   if(isTemporary(operand1))
+   {freeTemp();}
+
+   if(isTemporary(operand2))
+   {freeTemp();}
+
+   contentsOfAReg = getTemp();
+   
+   
+   symbolTable.at(contentsOfAReg).setDataType(BOOLEAN);
+   pushOperand(contentsOfAReg);
 }
 
 void Compiler::emitGreaterThanCode(string operand1, string operand2)    // op2 >  op1
@@ -2084,8 +2288,11 @@ void Compiler::emitGreaterThanCode(string operand1, string operand2)    // op2 >
    
    emit(labelTwo + ":", "", "", "");
    
-   insert("TRUE", BOOLEAN, CONSTANT, "-1", YES, 1);
-   insert("FALSE", BOOLEAN, CONSTANT, "0", YES, 1);
+   if(symbolTable.find("true") == symbolTable.end())
+      insert("TRUE", BOOLEAN, CONSTANT, "-1", YES, 1);
+
+   if(symbolTable.find("false") == symbolTable.end())
+      insert("FALSE", BOOLEAN, CONSTANT, "0", YES, 1);
    
    if(isTemporary(operand1))
    {freeTemp();}
@@ -2104,7 +2311,49 @@ void Compiler::emitGreaterThanCode(string operand1, string operand2)    // op2 >
 
 void Compiler::emitGreaterThanOrEqualToCode(string operand1, string operand2) // op2 >= op1
 {
-   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) 
+   if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
    {processError("illegal type");}
+   
+   if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
+   {
+      emit("", "mov","[" + symbolTable.at(contentsOfAReg).getInternalName() + "],eax","; deassign AReg");
+      symbolTable.at(contentsOfAReg).setAlloc(YES);
+      contentsOfAReg = "";
+   }
+   
+   if(contentsOfAReg != operand2)
+   {
+      contentsOfAReg = operand2;
+      emit("", "mov", "eax,[" + symbolTable.at(operand2).getInternalName() + "]","; AReg = " + operand2); 
+   }
+   
+   string labelOne = getLabel(), labelTwo = getLabel();
+   emit("", "cmp", "eax,[" + symbolTable.at(operand1).getInternalName() + "]", "; compare " +operand2 + " and " + operand1);
+   emit("", "jge", labelOne, "; if " + operand2 + " >= " + operand1 + " then jump to set eax to TRUE");
+   emit("", "mov", "eax,[FALSE]", "; else set eax to FALSE");
+   emit("", "jmp", labelTwo, "; unconditionally jump");
+   
+   emit(labelOne + ":", "", "", "");
+   emit("", "mov", "eax,[TRUE]", "; set eax to TRUE");
+   
+   emit(labelTwo + ":", "", "", "");
+   
+   if(symbolTable.find("true") == symbolTable.end())
+      insert("TRUE", BOOLEAN, CONSTANT, "-1", YES, 1);
+
+   if(symbolTable.find("false") == symbolTable.end())
+      insert("FALSE", BOOLEAN, CONSTANT, "0", YES, 1);
+   
+   if(isTemporary(operand1))
+   {freeTemp();}
+
+   if(isTemporary(operand2))
+   {freeTemp();}
+
+   contentsOfAReg = getTemp();
+   
+   
+   symbolTable.at(contentsOfAReg).setDataType(BOOLEAN);
+   pushOperand(contentsOfAReg);
 }
 
