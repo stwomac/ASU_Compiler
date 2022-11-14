@@ -1104,7 +1104,9 @@ void Compiler::assignStmt()     // stage 1, production 4
    if(token != ";")
    {processError("; expected");}
    
-   code(popOperator(), popOperand(), popOperand());
+   
+   string op = popOperator(), op1 = popOperand(), op2 = popOperand();
+   code(op,op1,op2);
    
 }
 
@@ -1590,7 +1592,15 @@ void Compiler::emitWriteCode(string operand, string operand2)
         if(symbolTable.at(tempName).getDataType() != INTEGER &&
            symbolTable.at(tempName).getDataType() != BOOLEAN)
            processError("INTEGER or BOOLEAN REQUIRED FOR WRITE EMIT");
+           
+        if(contentsOfAReg != tempName)
+        {
+           emit("","mov","eax,[" + symbolTable.at(tempName).getInternalName() + "]", "; load " + tempName + " in eax");
+           contentsOfAReg = tempName;
+        }
         
+        emit("", "call", "WriteInt", "; write int in eax to standard out");
+        emit("", "call", "Crlf", "; write \\r\\n to standard out");
         /**/
         
     }
@@ -1609,6 +1619,23 @@ void Compiler::emitAssignCode(string operand1, string operand2)         // op2 =
    
     if (symbolTable.at(operand2).getMode() != VARIABLE) //storage mode of operand2 is not VARIABLE -> NON_KEY_ID
     {processError("symbol on left-hand side of assignment must have a storage mode of VARIABLE");}
+    
+    if(operand1 == operand2)
+    {return;}
+ 
+    
+    if(contentsOfAReg != operand1)
+    {
+       emit("", "mov", "eax,[" + symbolTable.at(operand1).getInternalName() + "]", "; AReg = " + operand1);
+       contentsOfAReg = operand1;
+    }
+    
+    
+    emit("", "mov", "[" + symbolTable.at(operand2).getInternalName() + "],eax", "; " +operand2 + " = AReg");
+    
+    contentsOfAReg = operand2;
+    
+    
 }
 
 
@@ -1616,6 +1643,8 @@ void Compiler::emitAssignCode(string operand1, string operand2)         // op2 =
 void Compiler::emitAdditionCode(string operand1, string operand2)       // op2 +  op1
 {
 	
+
+   
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
    {processError("illegal type");}
    
@@ -1629,17 +1658,17 @@ void Compiler::emitAdditionCode(string operand1, string operand2)       // op2 +
    if(contentsOfAReg !=operand1 && contentsOfAReg != operand2)
    {
       contentsOfAReg = operand2;
-      emit("", "mov", "eax,[" + symbolTable.at(operand2).getInternalName() + "]","; Areg = " + operand2); 
+      emit("", "mov", "eax,[" + symbolTable.at(operand2).getInternalName() + "]","; AReg = " + operand2); 
    }
    
    /*Emit addition*/
    if(contentsOfAReg == operand2)
    {
-      emit("","add","eax,[" + symbolTable.at(operand1).getInternalName() +"]", "; Areg = " + operand2 + " + " + operand1);
+      emit("","add","eax,[" + symbolTable.at(operand1).getInternalName() +"]", "; AReg = " + operand2 + " + " + operand1);
    }
    else
    {
-      emit("","add","eax,[" + symbolTable.at(operand2).getInternalName() +"]", "; Areg = " + operand1 + " + " + operand2);
+      emit("","add","eax,[" + symbolTable.at(operand2).getInternalName() +"]", "; AReg = " + operand1 + " + " + operand2);
    }
    /*Free temps*/
    if(isTemporary(operand1))
@@ -1656,6 +1685,8 @@ void Compiler::emitAdditionCode(string operand1, string operand2)       // op2 +
    pushOperand(contentsOfAReg);
    
    
+   
+   
 }
 
 void Compiler::emitSubtractionCode(string operand1, string operand2)    // op2 -  op1
@@ -1666,6 +1697,7 @@ void Compiler::emitSubtractionCode(string operand1, string operand2)    // op2 -
 
 void Compiler::emitMultiplicationCode(string operand1, string operand2) // op2 *  op1
 {
+   
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
    {processError("illegal type");}
    
@@ -1679,17 +1711,17 @@ void Compiler::emitMultiplicationCode(string operand1, string operand2) // op2 *
    if(contentsOfAReg !=operand1 && contentsOfAReg != operand2)
    {
       contentsOfAReg = operand2;
-      emit("", "mov", "eax,[" + symbolTable.at(operand2).getInternalName() + "]","; Areg = " + operand2); 
+      emit("", "mov", "eax,[" + symbolTable.at(operand2).getInternalName() + "]","; AReg = " + operand2); 
    }
    
    /*emit multiplication*/
    if(contentsOfAReg == operand2)
    {
-      emit("","imul","dword [" + symbolTable.at(operand1).getInternalName() +"]", "; Areg = " + operand2 + " * " + operand1);
+      emit("","imul","dword [" + symbolTable.at(operand1).getInternalName() +"]", "; AReg = " + operand2 + " * " + operand1);
    }
    else
    {
-      emit("","imul","dword [" + symbolTable.at(operand2).getInternalName() +"]", "; Areg = " + operand1 + " * " + operand2);
+      emit("","imul","dword [" + symbolTable.at(operand2).getInternalName() +"]", "; AReg = " + operand1 + " * " + operand2);
    }
    /*Free temps*/
    if(isTemporary(operand1))
