@@ -1884,8 +1884,34 @@ void Compiler::emitModuloCode(string operand1, string operand2)         // op2 %
 
 void Compiler::emitNegationCode(string operand1, string operand2)           // -op1
 {
-   if(whichType(operand1) != INTEGER) 
+   if(whichType(operand1) != INTEGER) // type of either operand is not integer
    {processError("illegal type");}
+   
+   if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1)
+   {
+      emit("", "mov","[" + symbolTable.at(contentsOfAReg).getInternalName() + "],eax","; deassign AReg");
+      symbolTable.at(contentsOfAReg).setAlloc(YES);
+      contentsOfAReg = "";
+   }
+   
+   if(contentsOfAReg !=operand1 )
+   {
+      contentsOfAReg = operand1;
+      emit("", "mov", "eax,[" + symbolTable.at(operand1).getInternalName() + "]","; AReg = " + operand1); 
+   }
+   
+   /*Emit negation*/
+   emit("", "neg", "eax", "; AReg = -AReg");
+   
+   /*Free temps*/
+   if(isTemporary(operand1))
+   {freeTemp();}
+   
+   contentsOfAReg = getTemp();
+   
+   
+   symbolTable.at(contentsOfAReg).setDataType(INTEGER);
+   pushOperand(contentsOfAReg);
 }
 
 void Compiler::emitNotCode(string operand1, string operand2)                // !op1
