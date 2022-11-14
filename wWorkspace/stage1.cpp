@@ -950,6 +950,7 @@ void Compiler::code(string op, string operand1 , string operand2 )
     }
     else if(op == "+") //bindary +
     {
+		cout << endl << "in code op1 op2 "<< operand1 << " " << operand2 << endl;
        emitAdditionCode(operand1, operand2);
     }
     else if(op == "-") //binary -
@@ -1039,10 +1040,12 @@ void Compiler::execStmts()      // stage 1, production 2
 {
    nextToken();
    
+   cout << "\nexecStmts token : "<< token << endl;
    if(isNonKeyId(token)    || 
       token == "read"      ||
-      token == "write");
+      token == "write")
    {
+	   cout << "\nexecStmts token : "<< token << isNonKeyId(token)<<  endl;
       execStmt();
  
       execStmts();
@@ -1056,6 +1059,7 @@ void Compiler::execStmt()       // stage 1, production 3
 {
    if(isNonKeyId(token))
    {
+	  
       assignStmt();
    }
    else if(token == "read")
@@ -1171,8 +1175,6 @@ void Compiler::express()       // stage 1, production 9
    
 }
 
-
-
 void Compiler::expresses()      // stage 1, production 10
 {
    if(token == "<>"  || 
@@ -1185,7 +1187,8 @@ void Compiler::expresses()      // stage 1, production 10
       pushOperator(token);
       nextToken();
       term();
-      code(popOperator(),popOperand(),popOperand());
+      string op = popOperator(), op1 = popOperand(), op2 = popOperand();
+      code(op,op1,op2);
       expresses();
    }
    
@@ -1216,7 +1219,26 @@ void Compiler::terms()          // stage 1, production 12
       pushOperator(token);
       nextToken();
       factor();
-      code(popOperator(),popOperand(),popOperand());
+	  
+	  /*FIXME
+	  cout << "terms stk\n";
+	  while( !operatorStk.empty())
+   {
+      cout << operatorStk.top() << " ";
+      operatorStk.pop();
+   }
+   
+   cout << endl << "operand stack: ";
+    
+    while( !operandStk.empty())
+   {
+      cout << operandStk.top() << " ";
+      operandStk.pop();
+   }
+	  */
+	  
+	  string op = popOperator(), op1 = popOperand(), op2 = popOperand();
+      code(op,op1,op2);
       terms();
    }
    
@@ -1250,11 +1272,11 @@ void Compiler::factors()        // stage 1, production 14
       pushOperator(token);
       nextToken();
       part();
-      code(popOperator(), popOperand(), popOperand());
+      string op = popOperator(), op1 = popOperand(), op2 = popOperand();
+      code(op,op1,op2);
       factors();
    }
 }
-
 
 /*Untested but existing*/
 void Compiler::part()           // stage 1, production 15
@@ -1389,7 +1411,6 @@ void Compiler::pushOperator(string op)
    cout << " "<<op<<":" << op << " ";
 }
 
-
 void Compiler::pushOperand(string operand)
 {
    cout << " " << operand << ":";
@@ -1443,7 +1464,6 @@ string Compiler::popOperand()
    
    return "popOperand if issue";
 }
-
 
 void Compiler::freeTemp()
 {
@@ -1607,6 +1627,8 @@ void Compiler::emitAssignCode(string operand1, string operand2)         // op2 =
 /*Note from here on out operands can be INTEGER, BOOLEANS, OR NON KEY IDS*/
 void Compiler::emitAdditionCode(string operand1, string operand2)       // op2 +  op1
 {
+	cout << "\nop1: " << operand1 << "\top2: " << operand2 << "\tcontents of eax: " << 
+      contentsOfAReg << endl;
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
    {processError("illegal type");}
    
@@ -1636,7 +1658,7 @@ void Compiler::emitAdditionCode(string operand1, string operand2)       // op2 +
    if(isTemporary(operand1))
    {freeTemp();}
 
-   if(isTemporary(operand1))
+   if(isTemporary(operand2))
    {freeTemp();}
 
    
@@ -1659,6 +1681,44 @@ void Compiler::emitMultiplicationCode(string operand1, string operand2) // op2 *
 {
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
    {processError("illegal type");}
+   
+   if(isTemporary(contentsOfAReg) && contentsOfAReg != operand1 && contentsOfAReg != operand2)
+   {
+      emit("", "mov","[" + symbolTable.at(contentsOfAReg).getInternalName() + "],eax","; deassign AReg");
+      symbolTable.at(contentsOfAReg).setAlloc(YES);
+      contentsOfAReg = "";
+   }
+   
+   if(contentsOfAReg !=operand1 && contentsOfAReg != operand2)
+   {
+      contentsOfAReg = operand2;
+      emit("", "mov", "eax,[" + symbolTable.at(operand2).getInternalName() + "]","; Areg = " + operand2); 
+   }
+   
+   /*emit multiplication*/
+   if(contentsOfAReg == operand2)
+   {
+      emit("","imul","dword [" + symbolTable.at(operand1).getInternalName() +"]", "; Areg = " + operand2 + " * " + operand1);
+   }
+   else
+   {
+      emit("","imul","dword [" + symbolTable.at(operand2).getInternalName() +"]", "; Areg = " + operand1 + " * " + operand2);
+   }
+   /*Free temps*/
+   if(isTemporary(operand1))
+   {freeTemp();}
+
+   if(isTemporary(operand2))
+   {freeTemp();}
+
+   
+   contentsOfAReg = getTemp();
+   cout << endl << contentsOfAReg << endl;
+   
+   symbolTable.at(contentsOfAReg).setDataType(INTEGER);
+   pushOperand(contentsOfAReg);
+   
+   
 }
 
 void Compiler::emitDivisionCode(string operand1, string operand2)       // op2 /  op1
