@@ -523,7 +523,7 @@ void Compiler::insert(string externalName, storeTypes inType, modes inMode, stri
           processError(err); 
           
        }
-       else if(isKeyword(tempName))
+       else if(isKeyword(tempName) && tempName != "true" && tempName != "false")
        { processError("illegal use of keyword");}
        else if(symbolTable.size() > 255)
        { processError("symbolTable is over maximum size");}
@@ -583,7 +583,7 @@ storeTypes Compiler::whichType(string name) // tells which data type a name has
         else
         {
            //cout << endl << name  << endl;
-           processError("reference to undefined symbol");
+           processError("reference to undefined symbol " + name);
         }
     }
 	
@@ -609,13 +609,13 @@ string Compiler::whichValue(string name) // tells which value a name has
           else
           {
              //cout << endl << name  << endl;
-             processError("reference to undefined constant");
+             processError("reference to undefined symbol" + name);
           }
        }
        else
        {
           //cout << endl << name  << endl;
-          processError("reference to undefined constant");
+          processError("reference to undefined symbol" + name);
        }
     }
     
@@ -1114,8 +1114,9 @@ void Compiler::assignStmt()     // stage 1, production 4
    
    express();
    
+   /*Error statement was decided do due to dataset 113*/
    if(token != ";")
-   {processError("; expected");}
+   {processError("one of \"*\", \"and\", \"div\", \"mod\", \")\", \"+\", \"-\", \";\", \"<\", \"<=\", \"<>\", \"=\", \">\", \">=\", or \"or\" expected");}
    
    
    string op = popOperator(), op1 = popOperand(), op2 = popOperand();
@@ -1348,7 +1349,7 @@ void Compiler::part()           // stage 1, production 15
       }
       else
       {
-         processError("In Part: Expected (,INTEGER, or NON KEY ID after a + ");
+         processError("expected '(', integer, or non-keyword id; found +");
       }
    }
    else if(x == "-")
@@ -1378,7 +1379,7 @@ void Compiler::part()           // stage 1, production 15
       }
       else
       {
-         processError("In Part: Expected (,INTEGER, or NON KEY ID after a - ");
+         processError("expected '(', integer, or non-keyword id; found +");
       }
    }
    else if(isInteger(x) || 
@@ -1634,17 +1635,17 @@ void Compiler::emitWriteCode(string operand, string operand2)
            
            if(!definedStorage)
            {
-              emit("\nSECTION", ".data");
+              emit("\nSECTION ", ".data");
               
               emit("TRUELIT", "db", "'TRUE',0", "; literal string TRUE");
               emit("FALSLIT", "db", "'FALSE',0", "; literal string FALSE");
               
-              emit("\nSECTION", ".text");
+              emit("\nSECTION ", ".text");
               
               definedStorage = true;
               
            }
-           
+           emit("", "call", "Crlf", "; write \\r\\n to standard out");
         }
         /**/
         
@@ -1660,7 +1661,7 @@ void Compiler::emitAssignCode(string operand1, string operand2)         // op2 =
     {processError("operand2 reference to undefined symbol");}
         
     if (whichType(operand1) != whichType(operand2)) //(types of operands are not the same)
-    {processError("incompatible types");}
+    {processError("incompatible types for operator ':='");}
    
     if (symbolTable.at(operand2).getMode() != VARIABLE) //storage mode of operand2 is not VARIABLE -> NON_KEY_ID
     {processError("symbol on left-hand side of assignment must have a storage mode of VARIABLE");}
@@ -1691,7 +1692,7 @@ void Compiler::emitAdditionCode(string operand1, string operand2)       // op2 +
 
    
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
-   {processError("illegal type");}
+   {processError("binary '+' requires integer operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1 && contentsOfAReg != operand2)
    {
@@ -1916,20 +1917,118 @@ void Compiler::emitNegationCode(string operand1, string operand2)           // -
 
 void Compiler::emitNotCode(string operand1, string operand2)                // !op1
 {
-   if(whichType(operand1) != BOOLEAN) 
+   if(whichType(operand1) != BOOLEAN) // type of either operand is not integer
    {processError("illegal type");}
+   
+   if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1)
+   {
+      emit("", "mov","[" + symbolTable.at(contentsOfAReg).getInternalName() + "],eax","; deassign AReg");
+      symbolTable.at(contentsOfAReg).setAlloc(YES);
+      contentsOfAReg = "";
+   }
+   
+   if(contentsOfAReg !=operand1 )
+   {
+      contentsOfAReg = operand1;
+      emit("", "mov", "eax,[" + symbolTable.at(operand1).getInternalName() + "]","; AReg = " + operand1); 
+   }
+   
+   /*Emit negation*/
+   emit("", "not", "eax", "; AReg = !AReg");
+   
+   /*Free temps*/
+   if(isTemporary(operand1))
+   {freeTemp();}
+   
+   contentsOfAReg = getTemp();
+   
+   
+   symbolTable.at(contentsOfAReg).setDataType(BOOLEAN);
+   pushOperand(contentsOfAReg);
 }
 
 void Compiler::emitAndCode(string operand1, string operand2)            // op2 && op1
 {
-   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) 
-   {processError("illegal type");}
+   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) // type of either operand is not integer
+   {processError("binary '+' requires integer operands");}
+   
+   if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1 && contentsOfAReg != operand2)
+   {
+      emit("", "mov","[" + symbolTable.at(contentsOfAReg).getInternalName() + "],eax","; deassign AReg");
+      symbolTable.at(contentsOfAReg).setAlloc(YES);
+      contentsOfAReg = "";
+   }
+   
+   if(contentsOfAReg !=operand1 && contentsOfAReg != operand2)
+   {
+      contentsOfAReg = operand2;
+      emit("", "mov", "eax,[" + symbolTable.at(operand2).getInternalName() + "]","; AReg = " + operand2); 
+   }
+   
+   /*Emit and*/
+   if(contentsOfAReg == operand2)
+   {
+      emit("","and","eax,[" + symbolTable.at(operand1).getInternalName() +"]", "; AReg = " + operand2 + " and " + operand1);
+   }
+   else
+   {
+      emit("","and","eax,[" + symbolTable.at(operand2).getInternalName() +"]", "; AReg = " + operand1 + " and " + operand2);
+   }
+   /*Free temps*/
+   if(isTemporary(operand1))
+   {freeTemp();}
+
+   if(isTemporary(operand2))
+   {freeTemp();}
+
+   
+   contentsOfAReg = getTemp();
+   
+   
+   symbolTable.at(contentsOfAReg).setDataType(BOOLEAN);
+   pushOperand(contentsOfAReg);
 }
 
 void Compiler::emitOrCode(string operand1, string operand2)             // op2 || op1
 {
-   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) 
-   {processError("illegal type");}
+   if(whichType(operand1) != BOOLEAN || whichType(operand2) != BOOLEAN) // type of either operand is not integer
+   {processError("binary '+' requires integer operands");}
+   
+   if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1 && contentsOfAReg != operand2)
+   {
+      emit("", "mov","[" + symbolTable.at(contentsOfAReg).getInternalName() + "],eax","; deassign AReg");
+      symbolTable.at(contentsOfAReg).setAlloc(YES);
+      contentsOfAReg = "";
+   }
+   
+   if(contentsOfAReg !=operand1 && contentsOfAReg != operand2)
+   {
+      contentsOfAReg = operand2;
+      emit("", "mov", "eax,[" + symbolTable.at(operand2).getInternalName() + "]","; AReg = " + operand2); 
+   }
+   
+   /*Emit or*/
+   if(contentsOfAReg == operand2)
+   {
+      emit("","or","eax,[" + symbolTable.at(operand1).getInternalName() +"]", "; AReg = " + operand2 + " or " + operand1);
+   }
+   else
+   {
+      emit("","or","eax,[" + symbolTable.at(operand2).getInternalName() +"]", "; AReg = " + operand1 + " or " + operand2);
+   }
+   /*Free temps*/
+   if(isTemporary(operand1))
+   {freeTemp();}
+
+   if(isTemporary(operand2))
+   {freeTemp();}
+
+   
+   contentsOfAReg = getTemp();
+   
+   
+   symbolTable.at(contentsOfAReg).setDataType(BOOLEAN);
+   pushOperand(contentsOfAReg);
 }
 
 void Compiler::emitEqualityCode(string operand1, string operand2)       // op2 == op1
