@@ -2132,10 +2132,9 @@ void Compiler::emitInequalityCode(string operand1, string operand2)     // op2 !
    
    /*Emit and*/
    string labelOne = getLabel(), labelTwo = getLabel();
-   cout << endl << contentsOfAReg << " " << operand1 << " " << operand2 << endl;
    if(contentsOfAReg == operand2)
    {
-      emit("", "cmp", "eax,[" + symbolTable.at(operand1).getInternalName() + "]", "; compare " + operand2 + " and " + operand1);
+      emit("", "cmp", "eax,[" + symbolTable.at(operand1).getInternalName() + "]", "; compare " +operand2 + " and " + operand1);
       emit("", "jne", labelOne, "; if " + operand2 + " <> " + operand1 + " then jump to set eax to TRUE");
       emit("", "mov", "eax,[FALSE]", "; else set eax to FALSE");
       emit("", "jmp", labelTwo, "; unconditionally jump");
