@@ -898,8 +898,7 @@ string Compiler::nextToken() // returns the next token or END_OF_FILE marker
        else
        {processError("illegal symbol");}
     }
-	if(token.length() > 15)
-		token = token.substr(0, 15);
+	
     return token;
 }
 
@@ -1449,6 +1448,12 @@ void Compiler::pushOperand(string operand)
          
       }
      
+   }
+   else if(isNonKeyId(operand))
+   {
+      if(operand.length() > 15)
+      { operand = operand.substr(0,15);}
+      
    }
    
    operandStk.push(operand);

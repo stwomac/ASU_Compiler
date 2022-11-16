@@ -366,6 +366,7 @@ string Compiler::ids()          // stage 0, production 8
     if(!isNonKeyId(token))
     {
        processError("non-keyword identifier expected");
+
     }
     
     tempString = token;
@@ -897,6 +898,7 @@ string Compiler::nextToken() // returns the next token or END_OF_FILE marker
        else
        {processError("illegal symbol");}
     }
+	
     return token;
 }
 
@@ -1042,7 +1044,7 @@ void Compiler::beginEndStmt()   // stage 0, production 5
 	 
      //changing nextToken to token (gonna call next token at end of execStmts
      if (token != "end")
-        processError("Non Key ID, read, write, or end expected");
+        processError("Non Key ID, \"read\", \"write\", or end expected");
      
      if (nextToken() != ".")
         processError("period expected");
@@ -1108,7 +1110,7 @@ void Compiler::assignStmt()     // stage 1, production 4
    pushOperand(token);
    
    if(nextToken() != ":=")
-   {processError(":= expected");}
+   {processError(":= expected in assignment statement");}
    
    pushOperator(":=");
    
@@ -1136,7 +1138,7 @@ void Compiler::readStmt()       // stage 1, production 5
       string x = ids();
       
       if (token != ")")
-       processError("',' or ')' expected after non-keyword identifier");
+       processError("')' expected are non_key_id in \"read\"");
       code("read", x);
       
       if(nextToken() != ";")
@@ -1145,7 +1147,7 @@ void Compiler::readStmt()       // stage 1, production 5
    }
    else
    {
-      processError(" ( expected after read");
+      processError(" '(' expected after read");
    }
    
 }
@@ -1171,7 +1173,7 @@ void Compiler::writeStmt()      // stage 1, production 7
    }
    else
    {
-      processError(" ( expected after write");
+      processError(" '(' expected after \"write\"");
    }
    
 }
@@ -1187,7 +1189,7 @@ void Compiler::express()       // stage 1, production 9
       token != "-"      &&
       !isInteger(token) &&
       !isNonKeyId(token))
-   {processError("'not','true','false','(','+','-', INTEGER,NON_KEY_ID is expected");}
+   {processError("expected non_key_id, integer, \"not\", \"true\", \"false\", '(', '+', or '-'");}
    
    term();
    expresses();
@@ -1223,7 +1225,7 @@ void Compiler::term()           // stage 1, production 11
       token != "-"      &&
       !isInteger(token) &&
       !isNonKeyId(token))
-   {processError("'not','true','false','(','+','-', INTEGER,NON_KEY_ID is expected");}
+   {processError("expected non_key_id, integer, \"not\", \"true\", \"false\", '(', '+', or '-'");}
    factor();
    terms();
    
@@ -1235,12 +1237,14 @@ void Compiler::terms()          // stage 1, production 12
       token == "+"   ||
       token == "or")
    {
-      
       pushOperator(token);
       nextToken();
       factor();
 	  
+		
 	   string op = popOperator(), op1 = popOperand(), op2 = popOperand();
+	   
+	   
       code(op,op1,op2);
       terms();
    }
@@ -1258,7 +1262,7 @@ void Compiler::factor()         // stage 1, production 13
       token != "-"      &&
       !isInteger(token) &&
       !isNonKeyId(token))
-   {processError("'not','true','false','(','+','-', INTEGER,NON_KEY_ID is expected");}
+   {processError("expected non_key_id, integer, \"not\", \"true\", \"false\", '(', '+', or '-'");}
    part();
    factors();
    
@@ -1292,7 +1296,9 @@ void Compiler::part()           // stage 1, production 15
       if(y == "(")
       {
          
-         
+        // if (y.length() > 15)
+		//	y = y.substr(0, 15);
+		
          express();
          
          //need to think about how the token comes out of express
@@ -1305,7 +1311,7 @@ void Compiler::part()           // stage 1, production 15
          }
          else 
          {
-            processError("In Part: Expected ) after express is called");
+            processError("')' expected");
          }
       }
       else if(isBoolean(y))
@@ -1326,7 +1332,7 @@ void Compiler::part()           // stage 1, production 15
       }
       else 
       {
-         processError("In Part: Expected ( , boolean, or  after not");
+         processError("expected '(', boolean, or non-keyword id");
       }
       
    }
@@ -1341,7 +1347,7 @@ void Compiler::part()           // stage 1, production 15
         
          if(token != ")")
          {
-            processError("In Part: Expected ) after express is called");
+            processError("')' expected");
          }
       }
       else if(isInteger(y) || isNonKeyId(y))
@@ -1364,7 +1370,7 @@ void Compiler::part()           // stage 1, production 15
         
          if(token != ")")
          {
-            processError("In Part: Expected ) after express is called");
+            processError("')' expected");
          }
          
          code("neg", popOperand());
@@ -1380,7 +1386,7 @@ void Compiler::part()           // stage 1, production 15
       }
       else
       {
-         processError("expected '(', integer, or non-keyword id; found +");
+         processError("expected '(', integer, or non_key_id");
       }
    }
    else if(isInteger(x) || 
@@ -1395,12 +1401,12 @@ void Compiler::part()           // stage 1, production 15
         
       if(token != ")")
       {
-         processError("In Part: Expected ) after express is called");
+         processError("')' expected");
       }
    }
    else
    {
-      processError("not, +, -, (, INTEGER, true, false, or NON KEY ID expected in Part");
+      processError("not, +, -, (, INTEGER, true, false, or NON KEY ID expected");
    }
    
    
@@ -1415,11 +1421,12 @@ void Compiler::pushOperator(string op)
 
 void Compiler::pushOperand(string operand)
 {
-   cout << endl << "op: " << operand << " " << isLiteral(operand) << endl;
    
    if(isLiteral(operand))
    {
       
+	  if(operand.length() > 15)
+		  operand = operand.substr(0,15);
       
       if(symbolTable.find(operand) == symbolTable.end())
       {
@@ -1434,7 +1441,7 @@ void Compiler::pushOperand(string operand)
         }
         else
         {
-          
+           //note need to ask motl if pushing the operand should be constant or variable
             insert(operand,whichType(operand),CONSTANT,whichValue(operand),YES,1);
         }
          
@@ -1448,7 +1455,6 @@ void Compiler::pushOperand(string operand)
       { operand = operand.substr(0,15);}
       
    }
-   
    
    operandStk.push(operand);
       
@@ -1714,7 +1720,7 @@ void Compiler::emitAdditionCode(string operand1, string operand2)       // op2 +
 {
 	
 
-   
+   //cout << endl << operand1 << " " << operand2 <<endl;
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
    {processError("binary '+' requires integer operands");}
    
@@ -1910,7 +1916,7 @@ void Compiler::emitModuloCode(string operand1, string operand2)         // op2 %
 void Compiler::emitNegationCode(string operand1, string operand2)           // -op1
 {
    if(whichType(operand1) != INTEGER) // type of either operand is not integer
-   {processError("binary 'neg' requires integer operand");}
+   {processError("unary '-' requires an integer operand");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1)
    {
@@ -1942,7 +1948,7 @@ void Compiler::emitNegationCode(string operand1, string operand2)           // -
 void Compiler::emitNotCode(string operand1, string operand2)                // !op1
 {
    if(whichType(operand1) != BOOLEAN) // type of either operand is not integer
-   {processError("logical 'not' requires boolean operands");}
+   {processError("unary 'not' requires a boolean operand");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1)
    {
@@ -2058,7 +2064,7 @@ void Compiler::emitOrCode(string operand1, string operand2)             // op2 |
 void Compiler::emitEqualityCode(string operand1, string operand2)       // op2 == op1
 {
    if(whichType(operand1) != whichType(operand2)) // type of either operand is not integer
-   {processError("relational '=' requires the same typed operands");}
+   {processError("binary '=' requires operands of the same type");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1 && contentsOfAReg != operand2)
    {
@@ -2124,7 +2130,7 @@ void Compiler::emitEqualityCode(string operand1, string operand2)       // op2 =
 void Compiler::emitInequalityCode(string operand1, string operand2)     // op2 != op1
 {
    if(whichType(operand1) != whichType(operand2)) // type of either operand is not integer
-   {processError("relational '<>' requires the same type operands");}
+   {processError("binary '<>' requires operands of the same type");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg !=operand1 && contentsOfAReg != operand2)
    {
@@ -2141,10 +2147,9 @@ void Compiler::emitInequalityCode(string operand1, string operand2)     // op2 !
    
    /*Emit and*/
    string labelOne = getLabel(), labelTwo = getLabel();
-   cout << endl << contentsOfAReg << " " << operand1 << " " << operand2 << endl;
    if(contentsOfAReg == operand2)
    {
-      emit("", "cmp", "eax,[" + symbolTable.at(operand1).getInternalName() + "]", "; compare " + operand2 + " and " + operand1);
+      emit("", "cmp", "eax,[" + symbolTable.at(operand1).getInternalName() + "]", "; compare " +operand2 + " and " + operand1);
       emit("", "jne", labelOne, "; if " + operand2 + " <> " + operand1 + " then jump to set eax to TRUE");
       emit("", "mov", "eax,[FALSE]", "; else set eax to FALSE");
       emit("", "jmp", labelTwo, "; unconditionally jump");
@@ -2191,7 +2196,7 @@ void Compiler::emitInequalityCode(string operand1, string operand2)     // op2 !
 void Compiler::emitLessThanCode(string operand1, string operand2)       // op2 <  op1
 {
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
-   {processError("relational '<' requires integer operands");}
+   {processError("binary '<' requires integer operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
    {
@@ -2239,7 +2244,7 @@ void Compiler::emitLessThanCode(string operand1, string operand2)       // op2 <
 void Compiler::emitLessThanOrEqualToCode(string operand1, string operand2) // op2 <= op1
 {
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
-   {processError("relational '<=' requires integer operands");}
+   {processError("binary '<=' requires integer operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
    {
@@ -2287,7 +2292,7 @@ void Compiler::emitLessThanOrEqualToCode(string operand1, string operand2) // op
 void Compiler::emitGreaterThanCode(string operand1, string operand2)    // op2 >  op1
 {
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
-   {processError("relational '>' requires integer operands");}
+   {processError("binary '>' requires integer operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
    {
@@ -2337,7 +2342,7 @@ void Compiler::emitGreaterThanCode(string operand1, string operand2)    // op2 >
 void Compiler::emitGreaterThanOrEqualToCode(string operand1, string operand2) // op2 >= op1
 {
    if(whichType(operand1) != INTEGER || whichType(operand2) != INTEGER) // type of either operand is not integer
-   {processError("relational '>=' requires integer operands");}
+   {processError("binary '>=' requires integer operands");}
    
    if(isTemporary(contentsOfAReg) && contentsOfAReg != operand2)
    {

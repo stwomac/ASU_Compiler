@@ -1,0 +1,4 @@
+Things to ask motl is:
+
+e := +(-(+5)); okay?
+if so is the answer -5
