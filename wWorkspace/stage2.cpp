@@ -1076,26 +1076,43 @@ void Compiler::pushOperator(string op)
 
 void Compiler::pushOperand(string operand)
 {
+   
    if(isLiteral(operand))
    {
-	   if(operand.length() > 15)
-		   operand = operand.substr(0,15);
+      
+	  if(operand.length() > 15)
+		  operand = operand.substr(0,15);
       
       if(symbolTable.find(operand) == symbolTable.end())
       {
         
-         if(operand == "true")
-         {
-            insert("TRUE", BOOLEAN, CONSTANT, "-1", YES, 1);
-         }
-         else if(operand == "false")
-         {
-            insert("FALSE", BOOLEAN, CONSTANT, "0", YES, 1);
-         }
-         else
-         {
-             insert(operand,whichType(operand),CONSTANT,whichValue(operand),YES,1);
-         }
+        if(operand == "true")
+        {
+           insert("TRUE", BOOLEAN, CONSTANT, "-1", YES, 1);
+        }
+        else if(operand == "false")
+        {
+           insert("FALSE", BOOLEAN, CONSTANT, "0", YES, 1);
+        }
+        else
+        {
+           bool constExist = false;
+           for(auto const& x : symbolTable) 
+           {
+              if(x.second.getValue() == operand && x.second.getMode() == CONSTANT)
+              {
+                 operand = x.first;
+                 constExist = true;
+                 break;
+              }
+           }
+           //note need to ask motl if pushing the operand should be constant or variable
+           if(!constExist)
+           {
+            insert(operand,whichType(operand),CONSTANT,whichValue(operand),YES,1);
+           }
+        }
+         
          
       }
      
@@ -1108,7 +1125,8 @@ void Compiler::pushOperand(string operand)
    }
    
    operandStk.push(operand);
-
+      
+   
 }
 
 string Compiler::popOperator()
