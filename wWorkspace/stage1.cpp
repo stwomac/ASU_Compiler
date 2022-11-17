@@ -678,6 +678,9 @@ void Compiler::emitStorage()
     //for those entries in the symbolTable that have an allocation of YES and a storage mode of CONSTANT
     for(auto const& x : symbolTable) 
     { 
+      
+       cout << x.first << endl;
+ 
        string comment = "; ";
        comment += x.first;
        //see sample output - basically printing the int name, then dataType, etc
@@ -1441,8 +1444,21 @@ void Compiler::pushOperand(string operand)
         }
         else
         {
+           bool constExist = false;
+           for(auto const& x : symbolTable) 
+           {
+              if(x.second.getValue() == operand && x.second.getMode() == CONSTANT)
+              {
+                 operand = x.first;
+                 constExist = true;
+                 break;
+              }
+           }
            //note need to ask motl if pushing the operand should be constant or variable
+           if(!constExist)
+           {
             insert(operand,whichType(operand),CONSTANT,whichValue(operand),YES,1);
+           }
         }
          
          
