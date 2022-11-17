@@ -33,7 +33,7 @@ Compiler::~Compiler()           // destructor
 void Compiler::createListingHeader()
 {
     time_t now = time (NULL);
-    listingFile << "STAGE1:  " << "JohnPaul Flores, Steven Womack  " << ctime(&now) << "\n";
+    listingFile << "STAGE2:  " << "JohnPaul Flores, Steven Womack  " << ctime(&now) << "\n";
     listingFile << "LINE NO." << setw(30) << right << "SOURCE STATEMENT" << left << "\n\n" << right;
     //line numbers and source statements should be aligned under the headings 
 }
@@ -918,116 +918,6 @@ bool Compiler::isSpecialSymbol(char c) const // determines if c is a special sym
     return false;
 }
 
-void Compiler::code(string op, string operand1 , string operand2 )
-{
-   
-    if (op == "program")
-    {
-       emitPrologue(operand1);
-    }
-    else if (op == "end")
-    {
-       //cout << " made it to emit \n";
-       emitEpilogue();
-       
-    }
-    else if( op == "read")
-    {
-       emitReadCode(operand1);
-    }
-    else if(op == "write")
-    {
-       emitWriteCode(operand1);
-    }
-    else if(op == "+") //bindary +
-    {
-		
-       emitAdditionCode(operand1, operand2);
-    }
-    else if(op == "-") //binary -
-    {
-       emitSubtractionCode(operand1, operand2);
-    }
-    else if( op == "neg") //unary -
-    {
-       emitNegationCode(operand1);
-    }
-    else if(op == "not")
-    {
-       emitNotCode(operand1);
-    }
-    else if(op == "*")
-    {
-       emitMultiplicationCode(operand1, operand2);
-    }
-    else if( op == "div") //unary -
-    {
-       emitDivisionCode(operand1, operand2);
-    }
-    else if(op == "mod")
-    {
-       emitModuloCode(operand1, operand2);
-    }
-    else if(op == "and")
-    {
-       emitAndCode(operand1, operand2);
-    }
-    else if( op == "or") //unary -
-    {
-       emitOrCode(operand1, operand2);
-    }
-    else if(op == "=")
-    {
-       emitEqualityCode(operand1, operand2);
-    }
-    else if(op == ":=")
-    {
-       emitAssignCode(operand1, operand2);
-    }
-    else if(op == "<>")
-    {
-       emitInequalityCode(operand1, operand2);
-    }
-    else if(op == "<")
-    {
-       emitLessThanCode(operand1, operand2);
-    }
-    else if( op == "<=") //unary -
-    {
-       emitLessThanOrEqualToCode(operand1, operand2);
-    }
-    else if(op == ">")
-    {
-       emitGreaterThanCode(operand1, operand2);
-    }
-    else if(op == ">=")
-    {
-       emitGreaterThanOrEqualToCode(operand1, operand2);
-    }
-    else
-       processError("compiler error since function code should not be called with illegal arguments");
-}
-
-
-void Compiler::execStmts()      // stage 1, production 2
-{
-   nextToken();
-   
-   
-   if(isNonKeyId(token)    || 
-      token == "read"      ||
-      token == "write")
-   {
-	   
-      execStmt();
- 
-      execStmts();
-   }
-   
-   
-   
-}
-
 /* When Next Token is Called:
 Express - on start
 Part - on end only
@@ -1355,6 +1245,7 @@ void Compiler::pushOperator(string op)
 void Compiler::pushOperand(string operand)
 {
    
+   //cout << "\nattempt op: "<< operand;
    if(isLiteral(operand))
    {
       
@@ -1389,6 +1280,7 @@ void Compiler::pushOperand(string operand)
       
    }
    
+   //cout << " " << operand;
    operandStk.push(operand);
       
    
@@ -1451,19 +1343,18 @@ string Compiler::getTemp()
     return temp;
 }
 
-//need to check with motl wtf this is, this is a guess
 string Compiler::getLabel()
 {
-   static int labelCount = 0;
+   //cout << "\nin getLabel \n";
+   static int labelCount = -1;
+   labelCount++;
+   
    
    string ret = ".L" + to_string(labelCount);
-   labelCount++;
+   
    return ret;
 }
 
-//Note may be incomplete, currently views all temps as existing in the symbol table,
-//may need to worry about a temp that is not in the symbol table
-//also check with motl if this is even correct
 bool Compiler::isTemporary(string s) const // determines if s represents a temporary
 {
    if(symbolTable.find(s) != symbolTable.end())
@@ -1473,9 +1364,6 @@ bool Compiler::isTemporary(string s) const // determines if s represents a tempo
    }
    return false;
 }
-
-/* Validation will happen in these*/
-
 
 // operands for read code will be variable names
 void Compiler::emitReadCode(string operand, string operand2)
@@ -1618,10 +1506,10 @@ void Compiler::emitWriteCode(string operand, string operand2)
 void Compiler::emitAssignCode(string operand1, string operand2)         // op2 = op1
 {
     if(symbolTable.find(operand1) == symbolTable.end())
-    {processError("operand1 reference to undefined symbol " + operand1);}
+    {processError("reference to undefined symbol " + operand1);}
         
     if(symbolTable.find(operand2) == symbolTable.end())
-    {processError("operand2 reference to undefined symbol " + operand2);}
+    {processError("reference to undefined symbol " + operand2);}
         
     if (whichType(operand1) != whichType(operand2)) //(types of operands are not the same)
     {processError("incompatible types for operator ':='");}
@@ -2320,8 +2208,143 @@ void Compiler::emitGreaterThanOrEqualToCode(string operand1, string operand2) //
    pushOperand(contentsOfAReg);
 }
 
-
 /* Stage 2*/
+void Compiler::code(string op, string operand1 , string operand2 )
+{
+   
+    if (op == "program")
+    {
+       emitPrologue(operand1);
+    }
+    else if (op == "end")
+    {
+       //cout << " made it to emit \n";
+       if(operand1 == ".")
+       {  
+          if (token != "$")
+            processError("no text may follow \"end.\"");
+          
+          emitEpilogue();
+          
+       }
+       else if(operand1 == ";")
+       {//currently do nothing may need to think on this further}
+       }
+       else
+       {processError("neither . or ; as operand1");}
+       
+    }
+    else if( op == "read")
+    {
+       emitReadCode(operand1);
+    }
+    else if(op == "write")
+    {
+       emitWriteCode(operand1);
+    }
+    else if(op == "+") //bindary +
+    {
+		
+       emitAdditionCode(operand1, operand2);
+    }
+    else if(op == "-") //binary -
+    {
+       emitSubtractionCode(operand1, operand2);
+    }
+    else if( op == "neg") //unary -
+    {
+       emitNegationCode(operand1);
+    }
+    else if(op == "not")
+    {
+       emitNotCode(operand1);
+    }
+    else if(op == "*")
+    {
+       emitMultiplicationCode(operand1, operand2);
+    }
+    else if( op == "div") //unary -
+    {
+       emitDivisionCode(operand1, operand2);
+    }
+    else if(op == "mod")
+    {
+       emitModuloCode(operand1, operand2);
+    }
+    else if(op == "and")
+    {
+       emitAndCode(operand1, operand2);
+    }
+    else if( op == "or") //unary -
+    {
+       emitOrCode(operand1, operand2);
+    }
+    else if(op == "=")
+    {
+       emitEqualityCode(operand1, operand2);
+    }
+    else if(op == ":=")
+    {
+       emitAssignCode(operand1, operand2);
+    }
+    else if(op == "<>")
+    {
+       emitInequalityCode(operand1, operand2);
+    }
+    else if(op == "<")
+    {
+       emitLessThanCode(operand1, operand2);
+    }
+    else if( op == "<=") //unary -
+    {
+       emitLessThanOrEqualToCode(operand1, operand2);
+    }
+    else if(op == ">")
+    {
+       emitGreaterThanCode(operand1, operand2);
+    }
+    else if(op == ">=")
+    {
+       emitGreaterThanOrEqualToCode(operand1, operand2);
+    }
+    else if(op == "then")
+    {
+       emitThenCode(operand1, operand2);
+    }
+    else if(op == "else")
+    {
+       emitElseCode(operand1, operand2);
+    }
+    else if(op == "post if")
+    {
+       emitPostIfCode(operand1, operand2);
+    }
+    else if(op == "while")
+    {
+       emitWhileCode(operand1, operand2);
+    }
+    else if(op == "do")
+    {
+       emitDoCode(operand1, operand2);
+    }
+    else if(op == "post while")
+    {
+       emitPostWhileCode(operand1, operand2);
+    }
+    else if(op == "repeat")
+    {
+       emitRepeatCode(operand1,operand2);
+    }
+    else if(op == "until")
+    {
+       emitUntilCode(operand1,operand2);
+    }
+    else
+    {
+       processError("compiler error since function code should not be called with illegal arguments");
+    }
+}
+
 
 bool Compiler::isKeyword(string s) const  // determines if s is a keyword
 {
@@ -2358,12 +2381,13 @@ void Compiler::beginEndStmt()   // stage 0, production 5
      if (token != "begin")
         processError("keyword \"begin\" expected");
      
+     nextToken();
      execStmts();
      
 	 
      //changing nextToken to token (gonna call next token at end of execStmts
      if (token != "end")
-        processError("Non Key ID, read, write, or end expected");
+        processError("one of \";\", \"begin\", \"if\", \"read\", \"repeat\", \"while\", \"write\", \"end\", or \"until\" expected");
      
      nextToken();
      if (token != "." && token != ";")
@@ -2401,6 +2425,7 @@ void Compiler::execStmt()       // stage 1, production 3
    }
    else if(token == "repeat")
    {
+      //cout << "\ncalled\n";
       repeatStmt();
    }
    else if(token == ";")
@@ -2413,35 +2438,178 @@ void Compiler::execStmt()       // stage 1, production 3
    }
    else
    {
-      processError("invalid token in execStmt");
+      processError("executable statement expected");
    }
    
 }
 
+void Compiler::execStmts()      // stage 1, production 2
+{
+   /*
+   static bool firstTime = true;
+   if(firstTime)
+   {nextToken();}
+   
+   firstTime = false;
+   
+   cout << endl << token;
+   */
+   if(isNonKeyId(token)    || 
+      token == "read"      ||
+      token == "write"     ||
+      token == "if"        ||
+      token == "while"     ||
+      token == "repeat"    ||
+      token == ";"         ||
+      token == "begin")
+   {
+	   
+      execStmt();
+      
+      if(token == ";")
+      {
+         nextToken();
+      }
+      execStmts();
+   }
+   
+   
+   
+}
+
+
+//token is on if
 void Compiler::ifStmt()         // stage 2, production 3
 {
+   if(token != "if")
+      processError("if expected");
+   
+   express();
+   
+   //token on then
+   if(token != "then")
+      processError("then expected after if check");
+   
+   string op1 = popOperand();
+   code("then", op1);
+   
+   nextToken();
+   
+   
+   execStmt();
+   
+   //need this cause we could end at the end of a assign/read/write/
+   if(token == ";")
+      nextToken();
+   
+   elsePt();
    
 }
 
 void Compiler::elsePt()         // stage 2, production 4
 {
-   
+   if(token == "else")
+   {
+      string op1 = popOperand();
+      code("else", op1);
+      
+      nextToken();
+      execStmt();
+      
+      //token could be on ;
+     op1 = popOperand();
+     code("post if", op1);
+   }
+   else if( 
+      token == "end"    ||
+      token == ";"      ||
+      isNonKeyId(token) ||
+      token == "until"  ||
+      token == "begin"  ||
+      token == "while"  ||
+      token == "if"     ||
+      token == "repeat" ||
+      token == "read"   ||
+      token == "write")
+   {
+      string op1 = popOperand();
+      code("post if", op1);
+   }
+   else
+   {
+      processError("invalid token in elsePt");
+   }
 }
 
 void Compiler::whileStmt()      // stage 2, production 5
 {
+   if(token != "while")
+   {
+      processError("while expected");
+   }
    
+   code("while");
+   express();
    
+   if(token != "do")
+   {
+      processError("'do' expected");
+   }
+   
+   string op1 = popOperand(), op2;
+   
+   code("do", op1);
+   
+   nextToken();
+   execStmt();
+   
+   op1 = popOperand();
+   op2 = popOperand();
+   
+   code("post while", op1, op2);
 }
 
 void Compiler::repeatStmt()     // stage 2, production 6
 {
+   //cout << endl << token << endl;
+   if(token != "repeat")
+   {
+      processError("repeat expected");
+   }
+   
+   code("repeat");
+   
+   
+   nextToken();
+   //cout << endl << token << endl;
+   execStmts();
+   
+
+   //cout << endl << token << endl;
+   if(token != "until")
+   {
+      processError("until expected");
+   }
+   
+   express();
+   //cout << endl << token << endl;
+   
+   
+   string op1 = popOperand(), op2 = popOperand();
+   
+   code("until", op1, op2);
+   
+   if(token != ";")
+   {
+      processError("; expected at end of repeat expression");
+   }
    
 }
 
 void Compiler::nullStmt()       // stage 2, production 7
 {
-   
+   if(token != ";")
+      processError("null statement did not recieve a ;");
 }
 
 // Emit functions for Stage 2
@@ -2449,32 +2617,89 @@ void Compiler::nullStmt()       // stage 2, production 7
 // emit code which follows 'then' and statement predicate
 void Compiler::emitThenCode(string operand1, string operand2)
 {
-	
+   
+	string tempLabel;
+   
+   if(whichType(operand1) != BOOLEAN)
+   {
+      processError("predicate of if must be boolean valued");
+   }
+   
+   tempLabel = getLabel();
+   
+   if(contentsOfAReg != operand1)
+   {
+      contentsOfAReg = operand1;
+      emit("", "mov", "eax,[" + symbolTable.at(operand1).getInternalName() + "]","; AReg = " + operand1); 
+   }
+   
+   emit("", "cmp", "eax,0", "; compare eax to 0");
+   emit("", "je", tempLabel, "; if " + operand1 + " is false then jump to end of if");
+   pushOperand(tempLabel);
+   
+   if(isTemporary(operand1))
+   {freeTemp();}
+
+   contentsOfAReg = "";
 }
 
 // emit code which follows 'else' clause of 'if' statement
 void Compiler::emitElseCode(string operand1, string operand2)
 {
-	
+	string tempLabel = getLabel();
+   
+   emit("", "jmp", tempLabel, "; jump to end if");
+   emit(operand1 + ":", "", "", "; else");
+   
+   pushOperand(tempLabel);
+   
+   contentsOfAReg = "";
 }
 
 // emit code which follows end of 'if' statement
 void Compiler::emitPostIfCode(string operand1, string operand2)
 {
-	
+	emit(operand1 + ":", "", "", "; end if");
+   contentsOfAReg = "";
 	
 }
 
 // emit code following 'while'
 void Compiler::emitWhileCode(string operand1, string operand2)
 {
-	
+	string tempLabel = getLabel();
+   emit(tempLabel + ":", "", "", "; while");
+   pushOperand(tempLabel);
+   contentsOfAReg = "";
 }
 
 // emit code following 'do'
 void Compiler::emitDoCode(string operand1, string operand2)
 {
-	
+	string tempLabel;
+   
+   if(whichType(operand1) != BOOLEAN)
+   {
+      processError("predicate of while must be of type boolean");
+   }
+   
+   tempLabel = getLabel();
+   
+   if(contentsOfAReg != operand1)
+   {
+      contentsOfAReg = operand1;
+      emit("", "mov", "eax,[" + symbolTable.at(operand1).getInternalName() + "]","; AReg = " + operand1); 
+   }
+   
+   emit("", "cmp", "eax,0", "; compare eax to 0");
+   emit("", "je", tempLabel, "; if " + operand1 + " is false then jump to end while");
+   pushOperand(tempLabel);
+   
+   if(isTemporary(operand1))
+   {freeTemp();}
+
+   contentsOfAReg = "";
+   
 }
 
 // emit code at end of 'while' loop;
@@ -2482,13 +2707,19 @@ void Compiler::emitDoCode(string operand1, string operand2)
 // operand1 is the label which should follow the end of the loop
 void Compiler::emitPostWhileCode(string operand1, string operand2)
 {
-	
+	emit("", "jmp", operand2, "; end while");
+   emit(operand1 + ":", "", "", "");
+   contentsOfAReg = "";
 }
 
 // emit code which follows 'repeat'
 void Compiler::emitRepeatCode(string operand1, string operand2)
 {
-	
+	string tempLabel = getLabel();
+   //cout << endl<< "in emit" <<endl;
+   emit(tempLabel + ":", "", "","; repeat");
+   pushOperand(tempLabel);
+   contentsOfAReg = "";
 }
 
 // emit code which follows 'until' and the predicate of loop
@@ -2496,10 +2727,30 @@ void Compiler::emitRepeatCode(string operand1, string operand2)
 // operand2 is the label which points to the beginning of the loop
 void Compiler::emitUntilCode(string operand1, string operand2)
 {
-	
+	if(whichType(operand1) != BOOLEAN)
+   {
+      processError("predicate of until must be of type boolean");
+   }
+   
+   if(contentsOfAReg != operand1)
+   {
+      contentsOfAReg = operand1;
+      emit("", "mov", "eax,[" + symbolTable.at(operand1).getInternalName() + "]","; AReg = " + operand1); 
+   }
+   
+   emit("", "cmp", "eax,0", "; compare eax to 0");
+   emit("", "je", operand2, "; until "+ operand1+" is true");
+   
+   if(isTemporary(operand1))
+   {freeTemp();}
+
+   contentsOfAReg = "";
 }
 
 bool Compiler::isLabel(string s) const     // determines if s represents a label
 {
-	
+	if(s.length() > 2 && s[0] == '.' && s[1] == 'L')
+   {return true;}
+
+   return false;
 }
