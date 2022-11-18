@@ -679,7 +679,7 @@ void Compiler::emitStorage()
     for(auto const& x : symbolTable) 
     { 
       
-       cout << x.first << endl;
+       //cout << x.first << endl;
  
        string comment = "; ";
        comment += x.first;
@@ -1615,7 +1615,7 @@ void Compiler::emitWriteCode(string operand, string operand2)
 {
     string name = operand;
     
-    static bool definedStorage = false;
+    //static bool definedStorage = false;
    
     while(name != "")
     {
@@ -1660,11 +1660,12 @@ void Compiler::emitWriteCode(string operand, string operand2)
         }
         
         //refrencing data set 15 for this
-        if(symbolTable.at(tempName).getDataType() == INTEGER)
-        {
+        //if(symbolTable.at(tempName).getDataType() == INTEGER)
+        //{
            emit("", "call", "WriteInt", "; write int in eax to standard out");
            emit("", "call", "Crlf", "; write \\r\\n to standard out");
-        }
+        //}
+        /*
         else
         {
            string labelOne = getLabel(), labelTwo = getLabel();
@@ -1693,7 +1694,7 @@ void Compiler::emitWriteCode(string operand, string operand2)
            }
            emit("", "call", "Crlf", "; write \\r\\n to standard out");
         }
-        /**/
+        */
         
     }
 }
