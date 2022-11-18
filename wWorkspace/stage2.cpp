@@ -1080,38 +1080,38 @@ void Compiler::pushOperand(string operand)
    if(isLiteral(operand))
    {
       
-	  if(operand.length() > 15)
+	   if(operand.length() > 15)
 		  operand = operand.substr(0,15);
       
       if(symbolTable.find(operand) == symbolTable.end())
       {
         
-        if(operand == "true")
-        {
-           insert("TRUE", BOOLEAN, CONSTANT, "-1", YES, 1);
-        }
-        else if(operand == "false")
-        {
-           insert("FALSE", BOOLEAN, CONSTANT, "0", YES, 1);
-        }
-        else
-        {
-           bool constExist = false;
-           for(auto const& x : symbolTable) 
-           {
-              if(x.second.getValue() == operand && x.second.getMode() == CONSTANT)
-              {
-                 operand = x.first;
-                 constExist = true;
-                 break;
-              }
-           }
-           //note need to ask motl if pushing the operand should be constant or variable
-           if(!constExist)
-           {
-            insert(operand,whichType(operand),CONSTANT,whichValue(operand),YES,1);
-           }
-        }
+         if(operand == "true")
+         {
+            insert("TRUE", BOOLEAN, CONSTANT, "-1", YES, 1);
+         }
+         else if(operand == "false")
+         {
+            insert("FALSE", BOOLEAN, CONSTANT, "0", YES, 1);
+         }
+         else
+         {
+            bool constExist = false;
+            for(auto const& x : symbolTable) 
+            {
+               if(x.second.getValue() == operand && x.second.getMode() == CONSTANT)
+               {
+                  operand = x.first;
+                  constExist = true;
+                  break;
+               }
+            }
+            //note need to ask motl if pushing the operand should be constant or variable
+            if(!constExist)
+            {
+             insert(operand,whichType(operand),CONSTANT,whichValue(operand),YES,1);
+            }
+         }
          
          
       }
@@ -1262,7 +1262,7 @@ void Compiler::emitWriteCode(string operand, string operand2)
 {
    string name = operand;
    
-   static bool definedStorage = false;
+   //static bool definedStorage = false;
    
    while(name != "")
    {
@@ -1307,11 +1307,12 @@ void Compiler::emitWriteCode(string operand, string operand2)
       }
       
       //refrencing data set 15 for this
-      if(symbolTable.at(tempName).getDataType() == INTEGER)
-      {
+      //if(symbolTable.at(tempName).getDataType() == INTEGER)
+      //{
          emit("", "call", "WriteInt", "; write int in eax to standard out");
          emit("", "call", "Crlf", "; write \\r\\n to standard out");
-      }
+      //}
+      /*
       else
       {
          string labelOne = getLabel(), labelTwo = getLabel();
@@ -1340,7 +1341,7 @@ void Compiler::emitWriteCode(string operand, string operand2)
          }
          emit("", "call", "Crlf", "; write \\r\\n to standard out");
       }
-      
+      */
       
    }
 }
