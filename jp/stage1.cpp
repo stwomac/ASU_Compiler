@@ -1,9 +1,9 @@
 //CS 4301: 010 && 020
-//Stage 0 Compiler
+//Stage 1 Compiler
 //JohnPaul Flores && Steven Womack
-//11/4/2022
+//11/24/2022
 
-/*Womack Edition*/
+/*Womack Edition in wWorkspace/ finalized and left alone in jp/ and wWorkspace/ */
 
 
 
@@ -678,6 +678,9 @@ void Compiler::emitStorage()
     //for those entries in the symbolTable that have an allocation of YES and a storage mode of CONSTANT
     for(auto const& x : symbolTable) 
     { 
+      
+       //cout << x.first << endl;
+ 
        string comment = "; ";
        comment += x.first;
        //see sample output - basically printing the int name, then dataType, etc
@@ -1441,8 +1444,21 @@ void Compiler::pushOperand(string operand)
         }
         else
         {
+           bool constExist = false;
+           for(auto const& x : symbolTable) 
+           {
+              if(x.second.getValue() == operand && x.second.getMode() == CONSTANT)
+              {
+                 operand = x.first;
+                 constExist = true;
+                 break;
+              }
+           }
            //note need to ask motl if pushing the operand should be constant or variable
+           if(!constExist)
+           {
             insert(operand,whichType(operand),CONSTANT,whichValue(operand),YES,1);
+           }
         }
          
          
@@ -1599,7 +1615,7 @@ void Compiler::emitWriteCode(string operand, string operand2)
 {
     string name = operand;
     
-    static bool definedStorage = false;
+    //static bool definedStorage = false;
    
     while(name != "")
     {
@@ -1644,11 +1660,12 @@ void Compiler::emitWriteCode(string operand, string operand2)
         }
         
         //refrencing data set 15 for this
-        if(symbolTable.at(tempName).getDataType() == INTEGER)
-        {
+        //if(symbolTable.at(tempName).getDataType() == INTEGER)
+        //{
            emit("", "call", "WriteInt", "; write int in eax to standard out");
            emit("", "call", "Crlf", "; write \\r\\n to standard out");
-        }
+        //}
+        /*
         else
         {
            string labelOne = getLabel(), labelTwo = getLabel();
@@ -1677,7 +1694,7 @@ void Compiler::emitWriteCode(string operand, string operand2)
            }
            emit("", "call", "Crlf", "; write \\r\\n to standard out");
         }
-        /**/
+        */
         
     }
 }
