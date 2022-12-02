@@ -1099,7 +1099,7 @@ void Compiler::pushOperand(string operand)
             bool constExist = false;
             for(auto const& x : symbolTable) 
             {
-               if(x.second.getValue() == operand && x.second.getMode() == CONSTANT)
+               if(x.second.getValue() == operand && x.second.getMode() == CONSTANT && x.first != "true" && x.first != "false")
                {
                   operand = x.first;
                   constExist = true;
@@ -1353,6 +1353,8 @@ void Compiler::emitAssignCode(string operand1, string operand2)         // op2 =
        
    if(symbolTable.find(operand2) == symbolTable.end())
    {processError("reference to undefined symbol " + operand2);}
+
+   //cout << endl << operand1 << " " << whichType(operand1) << "\t" << operand2 <<  " " << whichType(operand2) << endl;
        
    if (whichType(operand1) != whichType(operand2)) //(types of operands are not the same)
    {processError("incompatible types for operator ':='");}
@@ -2041,7 +2043,9 @@ void Compiler::code(string op, string operand1 , string operand2 )
          
       }
       else if(operand1 == ";")
-      {//currently do nothing may need to think on this further}
+      {
+         if(token == "$")
+            processError("Final end has \";\", requires \".\""); 
       }
       else
       {processError("neither . or ; as operand1");}
@@ -2198,7 +2202,7 @@ void Compiler::beginEndStmt()   // stage 0, production 5
    
    //changing nextToken to token (gonna call next token at end of execStmts
    if (token != "end")
-      processError("one of \";\", \"begin\", \"if\", \"read\", \"repeat\", \"while\", \"write\", \"end\", or \"until\" expected");
+      processError("one of \";\", \"begin\", \"if\", \"read\", \"repeat\", \"while\", \"write\", \"end\", or \"until\" expected, recieved " + token);
    
    nextToken();
    if (token != "." && token != ";")
