@@ -1,5 +1,5 @@
 //CS 4301: 010 && 020
-//Stage 0 Compiler
+//Stage 1 Compiler
 //JohnPaul Flores && Steven Womack
 //11/4/2022
 
